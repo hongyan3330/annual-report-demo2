@@ -691,13 +691,7 @@ export default {
   computed: {
     // 动态背景类
     themeClass() {
-      const p = this.page;
-      if ([0, 1, 14, 15].includes(p)) return 'theme-intro';
-      if (p === 2) return 'theme-meeting';
-      if ([3, 4, 5, 7, 13].includes(p)) return 'theme-work';
-      if (p === 6) return 'theme-growth';
-      if ([8, 9, 10, 11, 12].includes(p)) return 'theme-academic';
-      return '';
+      return 'theme-intro';
     }
   },
   mounted() {
