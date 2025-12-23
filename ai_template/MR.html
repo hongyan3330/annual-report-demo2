@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2025年度足迹 - 布局调整版</title>
+    <!-- 核心依赖 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 指定 Lucide 版本以确保稳定性 -->
+    <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
+
+    <style>
+        /* =========================================
+           视觉系统：珊瑚橙经典黏土风
+           ========================================= */
+
+        body {
+            background-color: #E5E5E5;
+            margin: 0;
+            overflow: hidden;
+            font-family: "Nunito", "Quicksand", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overscroll-behavior: none;
+            user-select: none;
+        }
+
+        .bg-theme {
+            background-color: #FFF6E9;
+        }
+
+        /* --- 核心组件：黏土卡片 --- */
+        .clay-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 32px;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            box-shadow:
+                20px 20px 40px rgba(174, 174, 192, 0.15),
+                -10px -10px 20px rgba(255, 255, 255, 0.8),
+                inset 4px 4px 8px rgba(255, 255, 255, 0.5),
+                inset -4px -4px 8px rgba(174, 174, 192, 0.05);
+        }
+
+        /* --- 核心组件：黏土按钮 --- */
+        .clay-btn {
+            background: #FF7E5F;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-weight: 800;
+            box-shadow:
+                8px 8px 16px rgba(255, 126, 95, 0.3),
+                -4px -4px 8px rgba(255, 255, 255, 0.4),
+                inset 2px 2px 4px rgba(255, 255, 255, 0.3);
+            transition: all 0.1s;
+            cursor: pointer;
+        }
+
+        .clay-btn:active {
+            transform: scale(0.96);
+            box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- 顶部/底部控制按钮 (新增样式) --- */
+        .control-btn-top {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            /* 圆形，与音乐图标一致 */
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            color: #4B5563;
+        }
+
+        .control-btn-top:active {
+            transform: scale(0.9);
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .control-btn-bottom {
+            width: 100%;
+            height: 48px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FF7E5F;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .control-btn-bottom:active {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+
+        /* --- 装饰元素 --- */
+        .clay-sphere {
+            position: absolute;
+            border-radius: 50%;
+            box-shadow: inset 10px 10px 20px rgba(255, 255, 255, 0.6), inset -10px -10px 20px rgba(0, 0, 0, 0.05), 10px 10px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        /* --- 动画系统 --- */
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .animate-pop {
+            animation: pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-12px);
+            }
+        }
+
+        @keyframes pop {
+            0% {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .fade-enter-active,
+        .fade-leave-active {
+            transition: opacity 0.4s;
+        }
+
+        .fade-enter,
+        .fade-leave-to {
+            opacity: 0;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app" class="flex items-center justify-center min-h-screen bg-[#E5E5E5]">
+        <!-- 主容器 -->
+        <div class="relative w-full max-w-[400px]">
+
+            <div
+                class="w-full h-[100vh] sm:h-[800px] bg-theme sm:rounded-[40px] shadow-2xl overflow-hidden relative border-[12px] border-white ring-1 ring-gray-200">
+
+                <!-- 1. 左上角：上一页按钮 (对应你图片中的红框位置) -->
+                <button v-if="page > 0" @click="prev" class="absolute top-6 left-6 z-50 control-btn-top animate-pop">
+                    <lucide-icon name="chevron-left" size="20"></lucide-icon>
+                </button>
+
+                <!-- 右上角：音乐图标 (保持不变) -->
+                <button class="absolute top-6 right-6 z-50 control-btn-top animate-[spin_4s_linear_infinite]">
+                    <lucide-icon name="music" size="16"></lucide-icon>
+                </button>
+
+                <!-- Loading -->
+                <div v-if="loading" class="flex flex-col items-center justify-center h-full gap-4 relative z-50">
+                    <lucide-icon name="loader-2" size="40" class="animate-spin text-[#FF7E5F]"></lucide-icon>
+                    <p class="text-[#FF7E5F] font-bold">足迹生成中...</p>
+                </div>
+
+                <!-- 主内容区域 (增加 padding-bottom 防止底部按钮遮挡) -->
+                <div v-else class="w-full h-full relative flex flex-col" @touchstart="ts" @touchmove="tm"
+                    @touchend="te">
+
+                    <!-- 页面内容容器：flex-1 占据剩余空间 -->
+                    <div class="flex-1 relative overflow-hidden">
+                        <transition name="fade" mode="out-in">
+
+                            <!-- Part 1: 引入主题1 -->
+                            <div v-if="page===0" key="p1"
+                                class="h-full flex flex-col justify-center px-8 relative overflow-hidden">
+                                <div
+                                    class="clay-sphere w-48 h-48 bg-[#FFD166] top-[-50px] right-[-50px] animate-float opacity-80">
+                                </div>
+                                <div class="relative z-10 flex flex-col items-center text-center">
+                                    <div class="animate-pop w-full">
+                                        <span
+                                            class="inline-block px-4 py-2 bg-white/60 backdrop-blur-md rounded-full text-[#FF7E5F] text-sm font-bold shadow-sm mb-6">致敬坚守一线的你！</span>
+                                        <h1 class="text-4xl font-black text-gray-800 leading-tight mb-8">
+                                            你的2025<br>个人年度足迹<br>已解锁！
+                                        </h1>
+                                    </div>
+                                    <div class="flex items-center justify-center mb-10">
+                                        <div
+                                            class="w-48 h-48 bg-white rounded-full flex items-center justify-center clay-card animate-float">
+                                            <lucide-icon name="footprints" size="64"
+                                                class="text-[#FF7E5F]"></lucide-icon>
+                                        </div>
+                                    </div>
+                                    <div class="animate-pop w-full">
+                                        <p class="text-gray-400 text-xs mb-2">点击下方按钮开启</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Part 2: 引入主题2 -->
+                            <div v-else-if="page===1" key="p2"
+                                class="h-full flex flex-col justify-center px-6 relative overflow-hidden">
+                                <div
+                                    class="clay-sphere w-24 h-24 bg-[#B8E994] top-[10%] left-[-20px] opacity-60 animate-float">
+                                </div>
+                                <div class="relative z-10 w-full">
+                                    <div class="clay-card p-8 text-center animate-pop mb-8">
+                                        <p class="text-gray-500 text-sm mb-2">回望来时路</p>
+                                        <p class="text-xl font-bold text-gray-800 mb-6">我们已走过千山万水</p>
+                                        <div class="w-full h-px bg-gray-200 my-6"></div>
+                                        <p class="text-gray-500 text-sm mb-2">展望新征程</p>
+                                        <p class="text-xl font-bold text-gray-800 mb-6">曙光跃动在地平线上</p>
+                                        <p class="mt-4 font-black text-[#FF7E5F] text-2xl">长空浩荡，未来已来！</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Part 3: 入职 -->
+                            <div v-else-if="page===2" key="p3"
+                                class="h-full flex flex-col justify-center px-6 relative">
+                                <div class="animate-pop mb-6 text-center">
+                                    <h2 class="text-3xl font-black text-gray-800">相遇</h2>
+                                </div>
+                                <div
+                                    class="clay-card p-8 flex flex-col items-center justify-center text-center animate-pop relative z-10">
+                                    <div
+                                        class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6 shadow-md">
+                                        <lucide-icon name="calendar-heart" size="40"
+                                            class="text-blue-500"></lucide-icon>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-gray-800 mb-6">你好呀，{{data.name}}</h3>
+                                    <div class="bg-[#FFF0E5] p-6 rounded-3xl w-full mb-6 border border-white text-left">
+                                        <p class="text-gray-500 text-sm mb-1">还记得 <span
+                                                class="font-bold text-[#FF7E5F]">{{data.joinDate}}</span> 吗？</p>
+                                        <p class="text-gray-800 font-bold mb-4">那是你与康哲的第一次相遇</p>
+                                        <div class="w-full h-px bg-white my-3"></div>
+                                        <p class="text-gray-600 text-sm">今天，我们已经共同走过了</p>
+                                        <div class="mt-2"><span
+                                                class="font-black text-5xl text-[#FF7E5F]">{{data.joinDays}}</span>
+                                            <span class="text-gray-500">天</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-400 text-sm italic">"走着走着，回忆渐浓......"</p>
+                                </div>
+                            </div>
+
+                            <!-- Part 4: 分管 -->
+                            <div v-else-if="page===3" key="p4"
+                                class="h-full flex flex-col justify-center px-6 relative overflow-y-auto no-scrollbar pb-20">
+                                <div class="mb-6 animate-pop">
+                                    <span
+                                        class="inline-block px-3 py-1 bg-white/60 rounded-full text-xs text-gray-500 font-bold mb-2">2025
+                                        · 耕耘</span>
+                                    <h2 class="text-3xl font-black text-gray-800">分管版图</h2>
+                                </div>
+
+                                <div class="clay-card p-6 mb-6 animate-pop">
+                                    <div class="flex justify-between items-start mb-6">
+                                        <div class="text-center flex-1">
+                                            <p class="text-gray-500 text-xs mb-1">分管医院</p>
+                                            <span
+                                                class="font-black text-3xl text-gray-800">{{data.hospitals}}</span><span
+                                                class="text-xs text-gray-400 ml-1">家</span>
+                                        </div>
+                                        <div class="w-px bg-gray-200 h-10 mx-2 mt-2"></div>
+                                        <div class="text-center flex-1">
+                                            <p class="text-gray-500 text-xs mb-1">分管客户</p>
+                                            <span
+                                                class="font-black text-3xl text-gray-800">{{data.customers}}</span><span
+                                                class="text-xs text-gray-400 ml-1">位</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-4">
+                                        <div class="bg-white/50 p-4 rounded-2xl">
+                                            <div class="flex justify-between items-center mb-1">
+                                                <span class="text-sm text-gray-600 font-bold">触碰总客户数</span>
+                                                <span class="font-black text-xl text-[#FF7E5F]">{{data.touchCount}}
+                                                    <span class="text-sm font-normal text-gray-500">位</span></span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-xs text-gray-400">触碰率</span>
+                                                <span
+                                                    class="text-xs font-bold text-[#FF7E5F]">{{data.touchRate}}%</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="text-xs text-gray-500 space-y-2 pt-2 px-2">
+                                            <div class="flex justify-between">
+                                                <span>月均触碰 (实际业务月)</span>
+                                                <span class="font-bold text-gray-700">{{data.monthlyTouch}} 位</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span>全国排名</span>
+                                                <span class="font-bold text-[#FF7E5F]">第 {{data.rank}} 名</span>
+                                            </div>
+                                            <div class="w-full h-px bg-gray-100 my-2"></div>
+                                            <p class="text-center text-gray-400">超过了全国约 <span
+                                                    class="font-bold text-[#FF7E5F]">{{data.beatPercentage}}%</span>
+                                                的医药代表</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-white/40 p-4 rounded-2xl text-center animate-pop"
+                                    style="animation-delay: 0.1s;">
+                                    <p class="text-gray-600 text-xs italic">"你的努力或许悄无声息，但成长终会掷地有声"</p>
+                                </div>
+                            </div>
+
+                            <!-- Part 5: 客户提级 -->
+                            <div v-else-if="page===4" key="p5"
+                                class="h-full flex flex-col justify-center px-6 relative">
+                                <div
+                                    class="clay-sphere w-32 h-32 bg-purple-100 top-[-20px] right-[-20px] animate-float opacity-50">
+                                </div>
+                                <div class="mb-6 animate-pop relative z-10">
+                                    <h2 class="text-3xl font-black text-gray-800">提级 & 新增</h2>
+                                </div>
+
+                                <div class="clay-card p-6 mb-6 animate-pop relative z-10">
+                                    <p class="text-center text-xs text-gray-400 mb-4">2025年 大咖+现有讲者 & 现有讲者</p>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="bg-[#F3F4F6] rounded-2xl p-4 text-center">
+                                            <p class="text-3xl font-black text-gray-700 mb-1">+{{data.levelUpCount}}</p>
+                                            <span
+                                                class="text-[10px] text-gray-500 bg-white px-2 py-1 rounded-full shadow-sm">累计提级</span>
+                                        </div>
+                                        <div class="bg-[#FFF0E5] rounded-2xl p-4 text-center">
+                                            <p class="text-3xl font-black text-[#FF7E5F] mb-1">+{{data.newCultivate}}
+                                            </p>
+                                            <span
+                                                class="text-[10px] text-[#FF7E5F] bg-white px-2 py-1 rounded-full shadow-sm">累计新培养</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="clay-card p-6 animate-pop relative z-10" style="animation-delay: 0.1s;">
+                                    <p class="text-sm text-gray-600 leading-relaxed mb-4 font-bold">
+                                        "你的微笑和坚持，是70%的行动量+30%的方法！"
+                                    </p>
+                                    <div class="text-right">
+                                        <span
+                                            class="inline-block bg-[#FF7E5F] text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg transform -rotate-2">先动起来，再完美！</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Part 6: 拜访 -->
+                            <div v-else-if="page===5" key="p6"
+                                class="h-full flex flex-col justify-center px-6 relative overflow-y-auto no-scrollbar pb-20">
+                                <div class="mb-6 animate-pop">
+                                    <h2 class="text-3xl font-black text-gray-800">拜访时光</h2>
+                                </div>
+
+                                <div class="clay-card p-6 mb-6 animate-pop">
+                                    <div class="flex items-center gap-4 mb-6">
+                                        <div
+                                            class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-2xl">
+                                            🏃</div>
+                                        <div>
+                                            <p class="text-4xl font-black text-gray-800">{{data.totalVisits}}</p>
+                                            <p class="text-xs text-gray-400">总拜访次数</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-3">
+                                        <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+                                            <span class="text-sm text-gray-600">拜访客户</span>
+                                            <span class="font-bold text-gray-800">{{data.visitCustomers}} 位</span>
+                                        </div>
+                                        <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+                                            <span class="text-sm text-gray-600">重点客户</span>
+                                            <span class="font-bold text-gray-800">{{data.keyVisits}} 位</span>
+                                        </div>
+                                        <div class="flex justify-between items-center pt-1">
+                                            <span class="text-xs text-gray-400">早访 / 夜访</span>
+                                            <span class="font-bold text-[#FF7E5F]">{{data.earlyVisits}} /
+                                                {{data.nightVisits}} 次</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="clay-card p-6 text-center animate-pop" style="animation-delay: 0.1s;">
+                                    <div class="mb-2">
+                                        <span
+                                            class="inline-block px-3 py-1 bg-gray-100 text-gray-500 rounded text-xs font-bold tracking-wider">评级：{{data.visitScore}}</span>
+                                    </div>
+                                    <p class="text-gray-800 font-bold text-lg leading-relaxed">
+                                        "{{data.visitQuote}}"
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Part 7: 特早访 -->
+                            <div v-else-if="page===6" key="p7"
+                                class="h-full flex flex-col justify-center px-6 relative">
+                                <div
+                                    class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-[#FFFBEB] to-transparent pointer-events-none">
+                                </div>
+                                <div class="relative z-10 animate-pop">
+                                    <div class="clay-card p-2 inline-flex items-center gap-2 mb-6">
+                                        <span class="w-2 h-2 bg-orange-400 rounded-full"></span>
+                                        <span class="text-xs font-bold text-gray-500">特早访记录</span>
+                                    </div>
+                                    <h2 class="text-6xl font-black text-gray-800 mb-2">{{data.earlyVisitTime}}</h2>
+                                    <p class="text-xl text-gray-400 mb-8">{{data.earlyVisitDate}}</p>
+
+                                    <div class="clay-card p-8">
+                                        <p class="text-gray-600 leading-8">
+                                            你进行了今年最早的一次拜访。<br>
+                                            <span class="text-[#FF7E5F] font-bold">晨光会落在努力的人身上。</span><br>
+                                            别慌，慢慢来<br>
+                                            你想要的，岁月会慢慢给。
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Part 8: 特晚访 -->
+                            <div v-else-if="page===7" key="p8"
+                                class="h-full flex flex-col justify-center px-6 relative">
+                                <div class="absolute top-0 left-0 w-full h-full bg-[#2D3748] opacity-90 z-0"></div>
+                                <div
+                                    class="absolute top-10 right-10 w-20 h-20 bg-yellow-100 rounded-full blur-[40px] opacity-30 z-0">
+                                </div>
+
+                                <div class="relative z-10 animate-pop">
+                                    <div
+                                        class="bg-white/10 backdrop-blur-md p-2 rounded-full inline-flex items-center gap-2 mb-6 border border-white/20">
+                                        <span class="w-2 h-2 bg-yellow-200 rounded-full"></span>
+                                        <span class="text-xs font-bold text-white/80 pr-2">特晚访记录</span>
+                                    </div>
+                                    <h2 class="text-6xl font-black text-white mb-2">{{data.lateVisitTime}}</h2>
+                                    <p class="text-xl text-gray-400 mb-8">{{data.lateVisitDate}}</p>
+
+                                    <div
+                                        class="bg-white/10 backdrop-blur-md border border-white/20 rounded-[32px] p-8 shadow-2xl">
+                                        <p class="text-gray-200 leading-8">
+                                            你进行了今年最晚的一次拜访。<br>
+                                            <span class="text-white font-bold">向着月亮出发，</span><br>
+                                            即使不能到达，<br>
+                                            也能站在群星之中。
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Part 9: 会议总场次 -->
+                            <div v-else-if="page===8" key="p9"
+                                class="h-full flex flex-col justify-center px-6 relative">
+                                <div class="mb-6 animate-pop">
+                                    <h2 class="text-3xl font-black text-gray-800">学术争鸣</h2>
+                                </div>
+                                <div class="clay-card p-8 text-center animate-pop mb-6">
+                                    <div
+                                        class="w-16 h-16 bg-[#E0E7FF] rounded-full mx-auto mb-4 flex items-center justify-center">
+                                        <lucide-icon name="presentation" size="32" class="text-[#4F46E5]"></lucide-icon>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mb-2">2025年 主负责会议</p>
+                                    <p class="text-5xl font-black text-gray-800 mb-4">{{data.totalMeetings}} <span
+                                            class="text-base font-normal text-gray-400">场</span></p>
+                                    <div class="flex justify-center gap-2">
+                                        <span class="px-3 py-1 bg-gray-50 rounded-lg text-xs text-gray-600">排名
+                                            <b>{{data.meetingRank}}</b></span>
+                                        <span class="px-3 py-1 bg-gray-50 rounded-lg text-xs text-gray-600">击败
+                                            <b>{{data.meetingBeat}}%</b></span>
+                                    </div>
+                                </div>
+                                <div class="clay-card p-6 text-center animate-pop" style="animation-delay: 0.1s;">
+                                    <p class="text-gray-800 font-bold text-lg leading-relaxed">"{{data.meetingQuote}}"
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Part 10: 会议打卡 -->
+                            <div v-else-if="page===9" key="p10"
+                                class="h-full flex flex-col justify-center px-6 relative">
+                                <div class="mb-6 animate-pop">
+                                    <h2 class="text-3xl font-black text-gray-800">足迹·版图</h2>
+                                </div>
+                                <div class="clay-card p-6 mb-6 animate-pop">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <lucide-icon name="map-pin" class="text-[#FF7E5F]"></lucide-icon>
+                                        <span class="text-lg font-bold text-gray-800">踏足 {{data.meetingCities.length}}
+                                            个城市</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mb-4 pl-9">超过全国 <span
+                                            class="text-[#FF7E5F] font-bold">{{data.cityBeat}}%</span> 的医药代表</p>
+                                    <div class="flex flex-wrap gap-2 pl-9">
+                                        <span v-for="c in data.meetingCities.slice(0,5)" :key="c"
+                                            class="bg-white border border-gray-100 text-gray-600 px-3 py-1 rounded-xl text-xs font-bold shadow-sm">{{c}}</span>
+                                    </div>
+                                </div>
+                                <div class="bg-white/40 p-6 rounded-3xl text-center animate-pop"
+                                    style="animation-delay: 0.1s;">
+                                    <p class="text-gray-600 font-bold text-sm leading-loose">
+                                        山高路远，止不住行者征程<br>
+                                        <span class="text-[#FF7E5F]">春秋几变，篆刻鲲鹏轨迹</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Part 11: 会议类型 -->
+                            <div v-else-if="page===10" key="p11"
+                                class="h-full flex flex-col justify-center px-6 relative overflow-y-auto no-scrollbar pb-20">
+                                <div class="mb-6 animate-pop">
+                                    <h2 class="text-3xl font-black text-gray-800">会议全景</h2>
+                                </div>
+                                <div class="clay-card p-6 mb-6 animate-pop">
+                                    <div class="space-y-3 text-sm text-gray-600">
+                                        <div class="flex justify-between"><span>国内会 (线上)</span><span
+                                                class="font-bold">{{data.domesticOnline}} 场</span></div>
+                                        <div class="flex justify-between"><span>国内会 (线下)</span><span
+                                                class="font-bold">{{data.domesticOffline}} 场</span></div>
+                                        <div class="flex justify-between"><span>小型会 (线上)</span><span
+                                                class="font-bold">{{data.smallOnline}} 场</span></div>
+                                        <div class="flex justify-between"><span>小型会 (线下)</span><span
+                                                class="font-bold">{{data.smallOffline}} 场</span></div>
+                                        <div class="w-full h-px bg-gray-100 my-2"></div>
+                                        <div class="flex justify-between text-[#FF7E5F]"><span>会议支持</span><span
+                                                class="font-bold">{{data.supportMeetings}} 场</span></div>
+                                    </div>
+                                </div>
+
+                                <div class="clay-card p-6 animate-pop" style="animation-delay: 0.1s;">
+                                    <span
+                                        class="inline-block bg-[#FFE5D9] text-[#FF7E5F] px-3 py-1 rounded-lg text-xs font-bold mb-3">{{data.meetingTypeTag}}</span>
+                                    <p class="text-gray-700 font-bold leading-relaxed text-sm">
+                                        "{{data.meetingTypeMsg}}"
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Part 12: 忙碌月份 -->
+                            <div v-else-if="page===11" key="p12"
+                                class="h-full flex flex-col justify-center px-6 relative">
+                                <div
+                                    class="clay-sphere w-48 h-48 bg-red-100 bottom-[-40px] left-[-40px] animate-float opacity-40">
+                                </div>
+                                <div class="clay-card p-8 text-center animate-pop relative z-10">
+                                    <p class="text-gray-400 text-xs mb-4 uppercase tracking-widest">Busiest Month</p>
+                                    <h2 class="text-6xl font-black text-[#FF7E5F] mb-2">{{data.maxMeetingMonth}}</h2>
+                                    <p class="text-gray-800 font-bold text-lg mb-8">累计召开 {{data.maxMeetingCount}} 场会议
+                                    </p>
+                                    <div class="bg-gray-50 p-4 rounded-2xl">
+                                        <p class="text-sm text-gray-600 font-bold">"{{data.monthQuote}}"</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Part 13: 邀请客户 -->
+                            <div v-else-if="page===12" key="p13"
+                                class="h-full flex flex-col justify-center px-6 relative">
+                                <div class="text-center animate-pop mb-8 relative z-10">
+                                    <div
+                                        class="w-16 h-16 bg-blue-100 rounded-full mx-auto mb-4 flex items-center justify-center shadow-md">
+                                        <lucide-icon name="users" size="32" class="text-blue-500"></lucide-icon>
+                                    </div>
+                                    <h2 class="text-3xl font-black text-gray-800">共赴山海</h2>
+                                </div>
+                                <div class="clay-card p-8 animate-pop relative z-10">
+                                    <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-4">
+                                        <span class="text-gray-500 text-sm">邀请客户</span>
+                                        <span class="text-2xl font-black text-gray-800">{{data.inviteCount}} <span
+                                                class="text-xs font-normal text-gray-400">位</span></span>
+                                    </div>
+                                    <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-4">
+                                        <span class="text-gray-500 text-sm">累计人次</span>
+                                        <span class="text-2xl font-black text-gray-800">{{data.inviteTotal}}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-500 text-sm">参与会议</span>
+                                        <span class="text-2xl font-black text-gray-800">{{data.attendMeetings}} <span
+                                                class="text-xs font-normal text-gray-400">场</span></span>
+                                    </div>
+                                </div>
+                                <div class="mt-8 text-center animate-pop relative z-10" style="animation-delay: 0.1s;">
+                                    <p class="text-[#FF7E5F] font-bold text-sm">"进取点点星铺路，步履稳踏自成功"</p>
+                                </div>
+                            </div>
+
+                            <!-- Part 14: 任职资格 -->
+                            <div v-else-if="page===13" key="p14"
+                                class="h-full flex flex-col justify-center px-6 relative">
+                                <div
+                                    class="clay-sphere w-32 h-32 bg-yellow-100 top-20 right-[-20px] animate-float opacity-50">
+                                </div>
+                                <div class="clay-card p-8 text-center animate-pop relative z-10">
+                                    <div
+                                        class="w-20 h-20 bg-[#FFF9C4] rounded-full mx-auto mb-6 flex items-center justify-center shadow-inner">
+                                        <lucide-icon name="medal" size="40" class="text-[#FBC02D]"></lucide-icon>
+                                    </div>
+
+                                    <template v-if="data.promotionTimes > 0">
+                                        <h2 class="text-2xl font-black text-gray-800 mb-2">任职资格提升</h2>
+                                        <p class="text-6xl font-black text-[#FF7E5F] mb-6">{{data.promotionTimes}} <span
+                                                class="text-base text-gray-400 font-normal">次</span></p>
+                                        <div class="flex justify-center gap-3 mb-6">
+                                            <span
+                                                class="px-4 py-2 bg-[#DCFCE7] text-[#15803D] rounded-xl text-xs font-bold shadow-sm">等级
+                                                +{{data.levelUp}}</span>
+                                            <span
+                                                class="px-4 py-2 bg-[#DCFCE7] text-[#15803D] rounded-xl text-xs font-bold shadow-sm">档位
+                                                +{{data.gradeUp}}</span>
+                                        </div>
+                                        <p class="text-sm text-gray-500 italic">"若生来就是太阳，便无需为照耀万物而致歉"</p>
+                                    </template>
+
+                                    <template v-else>
+                                        <h2 class="text-2xl font-black text-gray-800 mb-4">沉淀的一年</h2>
+                                        <p class="text-sm text-gray-500 leading-relaxed">
+                                            "慢也好，步子小也好<br>是在往前走就好"
+                                        </p>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Part 15: 查房 -->
+                            <div v-else-if="page===14" key="p15"
+                                class="h-full flex flex-col justify-center px-6 relative">
+                                <div class="mb-6 animate-pop">
+                                    <h2 class="text-3xl font-black text-gray-800">奋战100天</h2>
+                                </div>
+                                <div
+                                    class="bg-[#FF7E5F] rounded-[32px] p-8 mb-6 animate-pop text-center text-white shadow-xl relative overflow-hidden">
+                                    <div class="clay-sphere w-20 h-20 bg-white opacity-20 top-[-10px] left-[-10px]">
+                                    </div>
+                                    <lucide-icon name="flame" size="32"
+                                        class="mx-auto mb-2 relative z-10"></lucide-icon>
+                                    <p class="opacity-90 text-sm mb-4 relative z-10">2025年下半年查房打卡</p>
+                                    <div class="flex justify-center items-baseline gap-1 relative z-10">
+                                        <span class="text-6xl font-black">{{data.checkInDays}}</span>
+                                        <span class="text-sm opacity-80">天</span>
+                                    </div>
+                                </div>
+                                <div class="clay-card p-6 text-center animate-pop" style="animation-delay: 0.1s;">
+                                    <p class="text-gray-500 text-xs mb-1">发表帖子</p>
+                                    <p class="text-2xl font-black text-gray-800 mb-4">{{data.checkInPosts}} 篇</p>
+                                    <div class="w-full h-px bg-gray-100 my-4"></div>
+                                    <p class="text-sm text-gray-700 font-bold leading-relaxed">{{ data.checkInDays >=
+                                        100 ? '"把行动交给现在，把结果交给时间"' : '"不要让胆怯掩盖了光芒，更不要让懒惰浪费了青春"' }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Part 16: 社区活跃 -->
+                            <div v-else-if="page===15" key="p16"
+                                class="h-full flex flex-col justify-center px-6 relative">
+                                <div class="mb-8 animate-pop">
+                                    <h2 class="text-3xl font-black text-gray-800">药企圈社区</h2>
+                                </div>
+                                <div v-if="data.posts > 0" class="grid grid-cols-2 gap-4 animate-pop">
+                                    <div class="clay-card p-4 flex flex-col items-center justify-center h-32">
+                                        <lucide-icon name="message-square" class="text-blue-400 mb-2"></lucide-icon>
+                                        <span class="text-2xl font-bold text-gray-800">{{data.posts}}</span>
+                                        <span class="text-xs text-gray-400">发布帖子</span>
+                                    </div>
+                                    <div class="clay-card p-4 flex flex-col items-center justify-center h-32">
+                                        <lucide-icon name="thumbs-up" class="text-red-400 mb-2"></lucide-icon>
+                                        <span class="text-2xl font-bold text-gray-800">{{data.likes}}</span>
+                                        <span class="text-xs text-gray-400">获赞</span>
+                                    </div>
+                                    <div class="clay-card p-6 col-span-2 flex items-center justify-between px-8">
+                                        <div>
+                                            <span class="text-xs text-gray-400 block mb-1">获得积分</span>
+                                            <span class="text-3xl font-bold text-gray-800">{{data.points}}</span>
+                                        </div>
+                                        <lucide-icon name="gem" class="text-yellow-400" size="40"></lucide-icon>
+                                    </div>
+                                    <div class="col-span-2 mt-4 text-center">
+                                        <p class="text-gray-500 text-sm font-bold">"人生没有白走的路，每一步都算数"</p>
+                                    </div>
+                                </div>
+                                <div v-else
+                                    class="clay-card p-8 text-center animate-pop flex flex-col justify-center min-h-[300px]">
+                                    <p class="text-gray-600 leading-relaxed mb-6">
+                                        2025年<br>你没有在药企圈进行互动发帖
+                                    </p>
+                                    <p class="text-[#FF7E5F] font-bold text-lg leading-relaxed">
+                                        "允许自己的小世界存在<br>也别忘了打开门，让光进来"
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Part 17: 结尾 -->
+                            <div v-else-if="page===16" key="p17"
+                                class="h-full flex flex-col justify-center px-8 text-center relative overflow-hidden">
+                                <div
+                                    class="clay-sphere w-64 h-64 bg-[#FAD390] top-[-50px] right-[-50px] opacity-40 animate-float">
+                                </div>
+                                <div class="animate-pop relative z-10">
+                                    <h2 class="text-2xl font-bold text-gray-500 mb-2">启一年复始</h2>
+                                    <h1 class="text-5xl font-black text-gray-800 mb-10">待四序更新</h1>
+                                    <div class="clay-card p-8">
+                                        <p class="text-gray-700 leading-loose font-medium">
+                                            今夜烟火向星辰<br>
+                                            祝我们所愿皆成真<br>
+                                            所求皆如愿<br>
+                                            所行皆坦途！
+                                        </p>
+                                    </div>
+                                    <div class="mt-12 animate-bounce cursor-pointer opacity-50 flex justify-center"
+                                        @click="next">
+                                        <lucide-icon name="chevron-down"></lucide-icon>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Part 18: 祝语 & 抽签 -->
+                            <div v-else key="end" class="h-full flex flex-col justify-center px-6 relative">
+                                <div
+                                    class="clay-card flex-1 max-h-[85%] flex flex-col items-center justify-center p-6 text-center animate-pop relative z-10">
+
+                                    <!-- 抽签前 -->
+                                    <div v-if="!blessing" class="w-full">
+                                        <div
+                                            class="w-24 h-24 bg-gradient-to-tr from-[#FF9A9E] to-[#FECFEF] rounded-full mx-auto mb-8 flex items-center justify-center shadow-lg animate-float">
+                                            <lucide-icon name="wand2" size="40" class="text-white"></lucide-icon>
+                                        </div>
+                                        <p class="text-gray-500 mb-8 text-sm font-medium">点击开启你的2026好运</p>
+                                        <button @click="getBlessing"
+                                            class="clay-btn px-10 py-4 text-lg w-full flex items-center justify-center gap-2 shadow-xl">
+                                            抽取 2026 灵签
+                                        </button>
+                                    </div>
+
+                                    <!-- 抽签后 -->
+                                    <div v-else class="w-full">
+                                        <div class="mb-8">
+                                            <p class="text-[10px] text-gray-400 uppercase tracking-[0.2em] mb-3">2026
+                                                Lucky Keyword</p>
+                                            <div
+                                                class="bg-[#FFF0E5] py-8 px-4 rounded-[32px] border-2 border-white shadow-sm">
+                                                <h2 class="text-4xl font-black text-[#FF7E5F] mb-0">{{blessing}}</h2>
+                                            </div>
+                                        </div>
+
+                                        <p class="text-xs text-gray-400 leading-relaxed mb-8">
+                                            2026就此启航<br>年岁初始，好事正酿<br>
+                                            <span class="font-bold text-gray-600">愿新年胜旧年，欢愉且胜意</span>
+                                        </p>
+
+                                        <div class="flex gap-3 w-full">
+                                            <button
+                                                class="flex-1 py-3 bg-white text-gray-600 rounded-2xl font-bold text-sm shadow-sm border border-gray-200"
+                                                @click="restart">
+                                                回看
+                                            </button>
+                                            <button
+                                                class="flex-1 py-3 clay-btn rounded-2xl text-sm flex items-center justify-center gap-2">
+                                                <lucide-icon name="share-2" size="14"></lucide-icon> 分享
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-[10px] text-gray-400 text-center mt-4 opacity-60">
+                                    此文案仅作回溯2025年工作记录<br>数据若有偏差请忽略</p>
+                            </div>
+
+                        </transition>
+                    </div>
+
+                    <!-- 2. 底部区域：下一页按钮 (对应你图片中底部的长条红框) -->
+                    <div class="px-6 pb-6 pt-2 shrink-0 z-50">
+                        <button v-if="page < 17" @click="next" class="control-btn-bottom clay-card animate-pop">
+                            下一页 <lucide-icon name="chevron-down" size="16" class="ml-1"></lucide-icon>
+                        </button>
+                        <div v-else class="h-12"></div> <!-- 占位符 -->
+
+                        <!-- 进度条整合在底部 -->
+                        <div class="mt-4 h-1 bg-gray-200 rounded-full overflow-hidden opacity-50">
+                            <div class="h-full bg-[#FF7E5F] transition-all duration-300"
+                                :style="{ width: ((page + 1) / 18 * 100) + '%' }"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 核心修复：Lucide Icon 组件 ---
+        Vue.component('lucide-icon', {
+            props: ['name', 'size', 'class'],
+            template: `<span ref="icon" :class="class" style="display:inline-flex;"></span>`,
+            mounted() {
+                // 使用 $nextTick 确保 DOM 渲染后再绘制
+                this.$nextTick(() => {
+                    this.draw();
+                });
+            },
+            watch: {
+                name() {
+                    this.$nextTick(this.draw);
+                }
+            },
+            methods: {
+                draw() {
+                    // 安全检查：如果 lucide 库尚未加载，稍后重试
+                    if (!window.lucide) {
+                        setTimeout(this.draw, 100);
+                        return;
+                    }
+                    if (!this.$refs.icon) return;
+
+                    this.$refs.icon.innerHTML = '';
+
+                    // 将 kebab-case (footprints) 转换为 PascalCase (Footprints)
+                    const name = this.name
+                        .replace(/-([a-z])/g, g => g[1].toUpperCase())
+                        .replace(/^[a-z]/, g => g.toUpperCase());
+
+                    const icon = lucide.icons[name];
+
+                    if (icon) {
+                        const svg = lucide.createElement(icon);
+                        svg.setAttribute('width', this.size || 24);
+                        svg.setAttribute('height', this.size || 24);
+                        // 移除默认 stroke-width (如果需要更细或更粗的线条)
+                        svg.setAttribute('stroke-width', 2.5);
+                        this.$refs.icon.appendChild(svg);
+                    } else {
+                        console.warn(`Icon not found: ${name}`);
+                    }
+                }
+            }
+        });
+
+        new Vue({
+            el: '#app',
+            data: {
+                page: 0,
+                loading: true,
+                blessing: null,
+                sy: 0, ey: 0,
+                // Mock Data
+                data: {
+                    name: "孙XX",
+                    joinDate: "2021年07月19日",
+                    joinDays: 1256,
+                    hospitals: 5, customers: 80, touchCount: 75, touchRate: 93.5,
+                    monthlyTouch: 65, rank: 168, beatPercentage: 85,
+                    levelUpCount: 12, newCultivate: 5,
+                    totalVisits: 1200, visitCustomers: 150, keyVisits: 80,
+                    earlyVisits: 32, nightVisits: 15,
+                    visitScore: '优', visitQuote: "星光不问赶路人，时光不负奋斗者",
+                    earlyVisitTime: "06:20", earlyVisitDate: "7月8日",
+                    lateVisitTime: "23:50", lateVisitDate: "11月3日",
+                    totalMeetings: 150, meetingRank: 160, meetingBeat: 95,
+                    meetingQuote: "海到无边天作岸，山登绝顶我为峰",
+                    meetingCities: ["北京", "上海", "广州", "成都", "武汉"], cityBeat: 80,
+                    domesticOnline: 20, domesticOffline: 80, smallOnline: 10, smallOffline: 40, supportMeetings: 15,
+                    meetingTypeTag: "线下会议居多", meetingTypeMsg: "没有一朵花，生来就是花。种子要历经风雨，才换来绽放的美丽。",
+                    maxMeetingMonth: "7月", maxMeetingCount: 27, monthQuote: "披星戴月走过的路，最终将会繁华满地",
+                    inviteCount: 228, inviteTotal: 1579, attendMeetings: 512,
+                    promotionTimes: 1, levelUp: 1, gradeUp: 2,
+                    checkInDays: 105, checkInPosts: 120,
+                    posts: 63, likes: 230, points: 1128
+                }
+            },
+            mounted() {
+                setTimeout(() => { this.loading = false; }, 1000);
+
+                // 键盘支持
+                window.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') this.prev();
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') this.next();
+                });
+            },
+            methods: {
+                next() { if (this.page < 17) this.page++; },
+                prev() { if (this.page > 0) this.page--; },
+                restart() { this.page = 0; this.blessing = null; },
+
+                ts(e) { this.sy = e.changedTouches[0].clientY; },
+                tm(e) { this.ey = e.changedTouches[0].clientY; },
+                te() {
+                    const diff = this.sy - this.ey;
+                    if (diff > 50) this.next();
+                    else if (diff < -50) this.prev();
+                },
+
+                getBlessing() {
+                    const blessings = [
+                        "有钱有闲", "升职加薪", "存款翻番", "早日脱单", "买车买房", "健康暴富",
+                        "项目必成", "事事顺心", "大展宏图", "再创佳绩", "奖金满满", "身体棒棒",
+                        "业绩长虹", "百事可乐", "锦鲤附体", "平步青云", "得偿所愿", "一帆风顺"
+                    ];
+                    this.blessing = blessings[Math.floor(Math.random() * blessings.length)];
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>2025年度足迹 (Vue 2.7 修复版)</title>
+  <!-- 1. 核心依赖 -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script> <!-- 图标库 -->
+  <script src="https://cdn.tailwindcss.com"></script> <!-- 样式库 -->
+
+  <style>
+    /* --- 样式系统 (复用黏土拟态) --- */
+    body {
+      font-family: "Nunito", "Quicksand", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #E5E5E5;
+      margin: 0;
+      overflow: hidden;
+      /* 防止下拉刷新干扰 */
+      overscroll-behavior: none;
+    }
+
+    .bg-peach-theme {
+      background: linear-gradient(135deg, #FFF6E9 0%, #FFE8D6 100%);
+    }
+
+    /* 核心黏土卡片 */
+    .clay-card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 32px;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      box-shadow:
+        12px 12px 24px rgba(214, 196, 178, 0.2),
+        -8px -8px 16px rgba(255, 255, 255, 0.9),
+        inset 6px 6px 12px rgba(214, 196, 178, 0.1),
+        inset -6px -6px 12px rgba(255, 255, 255, 0.9);
+    }
+
+    /* 按钮 */
+    .clay-btn {
+      border: none;
+      border-radius: 24px;
+      font-weight: 800;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.1), -4px -4px 10px rgba(255, 255, 255, 0.8), inset 2px 2px 4px rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+    }
+
+    .clay-btn:active {
+      transform: scale(0.96);
+      box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .clay-btn-primary {
+      background: #FF9F7F;
+      color: white;
+    }
+
+    .clay-btn-blue {
+      background: #8EC5FC;
+      color: white;
+    }
+
+    /* 3D 装饰 */
+    .clay-object {
+      position: absolute;
+      box-shadow: inset -8px -8px 16px rgba(0, 0, 0, 0.1), inset 8px 8px 16px rgba(255, 255, 255, 0.6), 8px 8px 16px rgba(0, 0, 0, 0.05);
+    }
+
+    /* 动画 */
+    .animate-float {
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .animate-pop {
+      animation: pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .animate-spin-slow {
+      animation: spin 4s linear infinite;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+
+      100% {
+        transform: translateY(0px);
+      }
+    }
+
+    @keyframes pop {
+      0% {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* 页面过渡效果 */
+    .fade-enter-active,
+    .fade-leave-active {
+      transition: opacity 0.5s;
+    }
+
+    .fade-enter,
+    .fade-leave-to {
+      opacity: 0;
+    }
+
+    /* 隐藏滚动条 */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app" class="flex items-center justify-center min-h-screen bg-[#E5E5E5]">
+    <!-- 手机容器 -->
+    <div
+      class="w-full max-w-[400px] h-[100vh] sm:h-[800px] bg-peach-theme sm:rounded-[40px] shadow-2xl overflow-hidden relative border-[12px] border-white ring-1 ring-gray-200">
+
+      <!-- 音乐控制 -->
+      <button @click="toggleMusic"
+        class="absolute top-6 right-6 z-50 w-10 h-10 rounded-full flex items-center justify-center bg-white/40 backdrop-blur-md border border-white/50 shadow-sm transition-all"
+        :class="{ 'animate-spin-slow': isPlaying }">
+        <lucide-icon name="music" class="text-[#5D5D5D]" :size="16"></lucide-icon>
+      </button>
+
+      <!-- 页面加载中 -->
+      <div v-if="loading" class="flex items-center justify-center h-full flex-col gap-4">
+        <lucide-icon name="loader-2" class="animate-spin text-[#FF9F7F]" :size="48"></lucide-icon>
+        <p class="text-[#8B4513] font-bold">年度数据加载中...</p>
+      </div>
+
+      <!-- 主内容区 -->
+      <div v-else class="w-full h-full relative" @touchstart="onTouchStart" @touchmove="onTouchMove"
+        @touchend="onTouchEnd">
+
+        <!-- 动态组件切换页面 -->
+        <transition name="fade" mode="out-in">
+          <component :is="currentPageComponent" :data="reportData" @next="nextPage" @prev="prevPage" @restart="restart">
+          </component>
+        </transition>
+
+        <!-- 底部进度条 -->
+        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 z-40 flex gap-2">
+          <div v-for="(n, index) in totalPages" :key="index" class="h-1.5 rounded-full transition-all duration-300"
+            :class="page === index ? 'w-6 bg-[#FF9F7F]' : 'w-1.5 bg-white/50'">
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= TEMPLATES (组件模板) ================= -->
+
+  <!-- 1. 首页 -->
+  <template id="tpl-page1">
+    <div class="h-full flex flex-col px-8 pt-24 pb-12 relative overflow-hidden">
+      <div class="clay-object w-24 h-24 bg-[#FFC8DD] rounded-full top-[-10px] right-[-10px] animate-float opacity-80">
+      </div>
+      <div class="relative z-10 flex flex-col h-full items-center text-center">
+        <div class="animate-pop w-full">
+          <span
+            class="inline-block px-3 py-1 rounded-xl text-xs font-bold shadow-sm bg-white/60 text-[#FF9F7F] mb-2">TO:
+            坚守一线的你</span>
+          <h1 class="text-4xl font-black text-[#5D5D5D] leading-tight mb-4 mt-2">
+            你的2025<br /><span class="text-[#FF9F7F]">个人年度足迹</span><br />已解锁！
+          </h1>
+          <div class="bg-white/50 p-6 rounded-3xl backdrop-blur-sm border border-white mb-6">
+            <p class="text-[#8D8D8D] text-sm leading-relaxed font-medium">"长空浩荡，未来已来！"</p>
+          </div>
+        </div>
+        <div class="flex-1 flex items-center justify-center">
+          <div class="w-48 h-48 clay-card rounded-full flex items-center justify-center animate-float">
+            <lucide-icon name="trending-up" class="text-[#FF9F7F]" :size="64"></lucide-icon>
+          </div>
+        </div>
+        <button @click="$emit('next')"
+          class="w-full py-4 text-lg clay-btn clay-btn-primary flex items-center justify-center gap-2 animate-pop">
+          点击查看年度足迹 <lucide-icon name="arrow-right" :size="20"></lucide-icon>
+        </button>
+      </div>
+    </div>
+  </template>
+
+  <!-- 2. 入职 -->
+  <template id="tpl-page2">
+    <div class="h-full flex flex-col px-6 pt-20 pb-12 relative">
+      <div class="clay-card p-8 flex-1 flex flex-col items-center text-center relative z-10 animate-pop">
+        <div
+          class="w-20 h-20 bg-[#CAFFBF] rounded-full flex items-center justify-center mb-6 shadow-md border-4 border-white clay-object">
+          <lucide-icon name="calendar" class="text-[#55A630]" :size="36"></lucide-icon>
+        </div>
+        <h2 class="text-2xl font-bold text-[#5D5D5D] mb-6">你好呀，{{data.name}}</h2>
+        <div class="bg-[#FFF0E5] p-5 rounded-3xl w-full mb-6 border border-white">
+          <p class="text-[#8D8D8D] text-sm mb-2">还记得这个日子吗？</p>
+          <p class="text-xl font-black text-[#FF9F7F] mb-2">{{data.joinDate}}</p>
+          <p class="text-[#8D8D8D] text-xs">那是你与康哲的第一次相遇</p>
+        </div>
+        <div class="space-y-4">
+          <p class="text-[#5D5D5D]">今天，我们已共同走过</p>
+          <div class="text-6xl font-black text-[#FF9F7F] drop-shadow-sm">{{data.joinDays}} <span
+              class="text-xl text-[#8D8D8D]">天</span></div>
+          <p class="text-[#8D8D8D] text-sm mt-4 italic">"走着走着，回忆渐浓......"</p>
+        </div>
+      </div>
+      <!-- 修复：z-30 提升层级，p-4 扩大点击热区 -->
+      <div class="mt-6 flex justify-center animate-bounce text-[#8D8D8D] cursor-pointer relative z-30 p-4"
+        @click="$emit('next')">
+        <lucide-icon name="chevron-down"></lucide-icon>
+      </div>
+    </div>
+  </template>
+
+  <!-- 3. 分管 -->
+  <template id="tpl-page3">
+    <div class="h-full flex flex-col px-6 pt-16 pb-12 relative">
+      <div class="mb-4 text-center animate-pop">
+        <h2 class="text-3xl font-black text-[#5D5D5D]">分管耕耘</h2>
+      </div>
+
+      <div class="clay-card p-6 mb-4 animate-pop" style="animation-delay:0.1s">
+        <div class="flex justify-between items-center mb-4">
+          <div class="text-left">
+            <p class="text-xs text-[#8D8D8D] mb-1">分管医院</p>
+            <span class="inline-flex items-baseline mx-1">
+              <span class="font-black text-4xl text-[#FF9F7F]">{{data.hospitals}}</span>
+              <span class="text-sm text-[#8D8D8D] ml-1">家</span>
+            </span>
+          </div>
+          <div class="w-[1px] h-10 bg-gray-200"></div>
+          <div class="text-right">
+            <p class="text-xs text-[#8D8D8D] mb-1">分管客户</p>
+            <span class="inline-flex items-baseline mx-1">
+              <span class="font-black text-4xl text-[#FF9F7F]">{{data.customers}}</span>
+              <span class="text-sm text-[#8D8D8D] ml-1">位</span>
+            </span>
+          </div>
+        </div>
+        <div class="bg-white/60 p-4 rounded-2xl border border-white">
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-[#5D5D5D]">触碰总客户数</span>
+            <span class="font-bold">{{data.touchCount}}</span>
+          </div>
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-[#5D5D5D]">触碰率</span>
+            <span class="font-bold text-[#FF9F7F]">{{data.touchRate}}%</span>
+          </div>
+          <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div class="h-full bg-[#FF9F7F]" :style="{width: data.touchRate + '%'}"></div>
+          </div>
+          <p class="text-xs text-[#8D8D8D] mt-3 text-center">
+            击败全国约 <span class="font-bold text-[#FF9F7F]">{{data.beatPercentage}}%</span> 的医药代表
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mb-4 animate-pop" style="animation-delay:0.2s">
+        <div class="clay-card p-4 flex flex-col items-center justify-center bg-[#F0F4F8]">
+          <p class="text-3xl font-black text-[#5D5D5D] mb-1">+{{data.levelUpCount}}</p>
+          <span
+            class="inline-block px-3 py-1 rounded-xl text-xs font-bold shadow-sm bg-[#A0C4FF] text-[#1D3557] mb-2">客户提级</span>
+        </div>
+        <div class="clay-card p-4 flex flex-col items-center justify-center bg-[#F0F4F8]">
+          <p class="text-3xl font-black text-[#5D5D5D] mb-1">+{{data.newCultivate}}</p>
+          <span
+            class="inline-block px-3 py-1 rounded-xl text-xs font-bold shadow-sm bg-[#A0C4FF] text-[#1D3557] mb-2">新培养</span>
+        </div>
+      </div>
+
+      <!-- 修复：z-30 提升层级，p-4 扩大点击热区 -->
+      <div class="mt-auto flex justify-center animate-bounce text-[#8D8D8D] cursor-pointer relative z-30 p-4"
+        @click="$emit('next')">
+        <lucide-icon name="chevron-down"></lucide-icon>
+      </div>
+    </div>
+  </template>
+
+  <!-- 4. 拜访 -->
+  <template id="tpl-page4">
+    <div class="h-full flex flex-col px-6 pt-16 pb-12 relative">
+      <div class="mb-4 animate-pop">
+        <span
+          class="inline-block px-3 py-1 rounded-xl text-xs font-bold shadow-sm bg-[#FFD6A5] text-[#8B4513] mb-2">步履不停</span>
+        <h2 class="text-3xl font-black text-[#5D5D5D]">拜访时光</h2>
+      </div>
+      <div class="flex gap-3 mb-6 animate-pop">
+        <div class="flex-1 clay-card p-4 text-center">
+          <p class="text-xs text-[#8D8D8D]">总拜访</p>
+          <p class="font-black text-2xl text-[#5D5D5D]">{{data.totalVisits}} <span
+              class="text-sm text-[#8D8D8D]">次</span></p>
+        </div>
+        <div class="flex-1 clay-card p-4 text-center">
+          <p class="text-xs text-[#8D8D8D]">重点客户</p>
+          <p class="font-black text-2xl text-[#5D5D5D]">{{data.keyVisits}} <span class="text-sm text-[#8D8D8D]">位</span>
+          </p>
+        </div>
+      </div>
+      <!-- 早访 -->
+      <div class="clay-card p-4 mb-4 flex items-center gap-4 animate-pop relative overflow-hidden"
+        style="animation-delay:0.2s">
+        <div
+          class="w-12 h-12 bg-[#FFEFBA] rounded-full flex items-center justify-center border-4 border-white shrink-0 shadow-inner">
+          <lucide-icon name="sun" class="text-orange-500" :size="24"></lucide-icon>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-bold bg-orange-100 text-orange-600 px-2 py-0.5 rounded">特早访
+              {{data.earlyVisitTime}}</span>
+          </div>
+          <p class="text-xs text-[#8D8D8D]">{{data.earlyVisitDate}} | 晨光落在努力的人身上</p>
+        </div>
+      </div>
+      <!-- 晚访 -->
+      <div class="clay-card p-4 mb-6 flex items-center gap-4 animate-pop relative overflow-hidden"
+        style="animation-delay:0.3s">
+        <div
+          class="w-12 h-12 bg-[#E2E2FF] rounded-full flex items-center justify-center border-4 border-white shrink-0 shadow-inner">
+          <lucide-icon name="moon" class="text-indigo-500" :size="24"></lucide-icon>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-bold bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded">特晚访
+              {{data.lateVisitTime}}</span>
+          </div>
+          <p class="text-xs text-[#8D8D8D]">{{data.lateVisitDate}} | 向着月亮出发</p>
+        </div>
+      </div>
+      <!-- 修复：z-30 提升层级，p-4 扩大点击热区 -->
+      <div class="mt-auto flex justify-center animate-bounce text-[#8D8D8D] cursor-pointer relative z-30 p-4"
+        @click="$emit('next')">
+        <lucide-icon name="chevron-down"></lucide-icon>
+      </div>
+    </div>
+  </template>
+
+  <!-- 5. 会议 -->
+  <template id="tpl-page5">
+    <div class="h-full flex flex-col px-6 pt-16 pb-12 relative">
+      <div class="mb-4 animate-pop">
+        <h2 class="text-3xl font-black text-[#5D5D5D]">学术争鸣</h2>
+      </div>
+      <div class="clay-card p-5 mb-4 text-center animate-pop relative" style="animation-delay:0.1s">
+        <div
+          class="w-16 h-16 bg-[#BDE0FE] rounded-full mx-auto mb-2 flex items-center justify-center border-4 border-white shadow-lg clay-object">
+          <lucide-icon name="briefcase" class="text-[#1D3557]" :size="32"></lucide-icon>
+        </div>
+        <p class="text-xs text-[#8D8D8D] mb-1">主负责会议</p>
+        <p class="text-4xl font-black text-[#5D5D5D] mb-3">{{data.totalMeetings}} <span
+            class="text-sm font-normal">场</span></p>
+        <div class="bg-white/50 rounded-xl p-2 text-xs text-[#5D5D5D]">
+          击败全国约 <span class="font-bold text-[#FF9F7F]">{{data.meetingBeat}}%</span> 的代表
+        </div>
+      </div>
+      <div class="clay-card p-4 mb-4 animate-pop" style="animation-delay:0.2s">
+        <div class="flex items-center gap-2 mb-2">
+          <lucide-icon name="map-pin" class="text-[#FF9F7F]" :size="16"></lucide-icon>
+          <span class="text-sm font-bold text-[#5D5D5D]">会议足迹</span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span v-for="c in data.meetingCities" :key="c"
+            class="bg-[#FFF0E5] text-[#8B4513] text-xs px-2 py-1 rounded-lg">{{c}}</span>
+        </div>
+      </div>
+      <div class="bg-[#FF9F7F] p-4 rounded-2xl text-white shadow-lg animate-pop" style="animation-delay:0.4s">
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="text-xs opacity-80">邀请客户</p>
+            <p class="text-xl font-bold">{{data.inviteCount}} 位</p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs opacity-80">累计邀请</p>
+            <p class="text-xl font-bold">{{data.inviteTotal}} 人次</p>
+          </div>
+        </div>
+      </div>
+      <!-- 修复：z-30 提升层级，p-4 扩大点击热区 -->
+      <div class="mt-auto flex justify-center animate-bounce text-[#8D8D8D] cursor-pointer relative z-30 p-4"
+        @click="$emit('next')">
+        <lucide-icon name="chevron-down"></lucide-icon>
+      </div>
+    </div>
+  </template>
+
+  <!-- 6. 任职 -->
+  <template id="tpl-page6">
+    <div class="h-full flex flex-col px-6 pt-20 pb-12 relative">
+      <div class="mb-6 animate-pop text-center">
+        <h2 class="text-3xl font-black text-[#5D5D5D]">任职提升</h2>
+      </div>
+      <div class="clay-card p-8 mb-8 relative overflow-hidden animate-pop z-10">
+        <div class="absolute top-[-20px] right-[-20px] w-32 h-32 bg-[#FFD6A5] rounded-full opacity-50 clay-object">
+        </div>
+        <div class="relative z-10 text-center">
+          <div
+            class="w-24 h-24 bg-[#FDFFB6] rounded-full mx-auto mb-4 flex items-center justify-center border-4 border-white shadow-lg clay-object">
+            <lucide-icon name="award" class="text-[#FFC300]" :size="48"></lucide-icon>
+          </div>
+          <p class="text-[#5D5D5D] text-lg mb-2">任职资格提升</p>
+          <p class="text-6xl font-black text-[#FF9F7F] mb-6">{{data.promotionTimes}} <span
+              class="text-xl text-[#8D8D8D]">次</span></p>
+          <div class="flex justify-center gap-3">
+            <span
+              class="inline-block px-3 py-1 rounded-xl text-xs font-bold shadow-sm bg-[#CAFFBF] text-[#2D6A4F] mb-2">等级
+              +{{data.levelUp}}</span>
+            <span
+              class="inline-block px-3 py-1 rounded-xl text-xs font-bold shadow-sm bg-[#CAFFBF] text-[#2D6A4F] mb-2">档位
+              +{{data.gradeUp}}</span>
+          </div>
+        </div>
+      </div>
+      <!-- 修复：z-30 提升层级，p-4 扩大点击热区 -->
+      <div class="mt-auto flex justify-center animate-bounce text-[#8D8D8D] cursor-pointer relative z-30 p-4"
+        @click="$emit('next')">
+        <lucide-icon name="chevron-down"></lucide-icon>
+      </div>
+    </div>
+  </template>
+
+  <!-- 7. 社区 -->
+  <template id="tpl-page7">
+    <div class="h-full flex flex-col px-6 pt-16 pb-12 relative">
+      <div class="mb-6 animate-pop">
+        <h2 class="text-3xl font-black text-[#5D5D5D]">社区活跃</h2>
+      </div>
+      <div class="grid grid-cols-3 gap-3 mb-6 animate-pop" style="animation-delay:0.1s">
+        <div class="clay-card p-3 flex flex-col items-center justify-center text-center bg-[#F0F4F8]">
+          <lucide-icon name="message-circle" class="text-[#4CC9F0] mb-2" :size="20"></lucide-icon>
+          <span class="font-bold text-lg text-[#5D5D5D]">{{data.posts}}</span>
+          <span class="text-[10px] text-[#8D8D8D]">发布帖子</span>
+        </div>
+        <div class="clay-card p-3 flex flex-col items-center justify-center text-center bg-[#F0F4F8]">
+          <lucide-icon name="heart" class="text-[#F72585] mb-2" :size="20"></lucide-icon>
+          <span class="font-bold text-lg text-[#5D5D5D]">{{data.likes}}</span>
+          <span class="text-[10px] text-[#8D8D8D]">获得点赞</span>
+        </div>
+        <div class="clay-card p-3 flex flex-col items-center justify-center text-center bg-[#F0F4F8]">
+          <lucide-icon name="star" class="text-[#F9C74F] mb-2" :size="20"></lucide-icon>
+          <span class="font-bold text-lg text-[#5D5D5D]">{{data.points}}</span>
+          <span class="text-[10px] text-[#8D8D8D]">获得积分</span>
+        </div>
+      </div>
+      <div class="clay-card p-5 animate-pop relative overflow-hidden" style="animation-delay:0.3s">
+        <div class="absolute top-0 left-0 w-full h-2 bg-[#FF9F7F]"></div>
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 bg-[#FFD6A5] rounded-full flex items-center justify-center text-[#8B4513]">
+            <lucide-icon name="activity" :size="20"></lucide-icon>
+          </div>
+          <span class="font-bold text-[#5D5D5D]">奋战100天查房</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="text-xs text-[#8D8D8D]">打卡天数</p>
+            <p class="text-2xl font-black text-[#FF9F7F]">{{data.checkInDays}} <span class="text-sm">天</span></p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs text-[#8D8D8D]">发表帖子</p>
+            <p class="text-2xl font-black text-[#FF9F7F]">{{data.checkInPosts}} <span class="text-sm">篇</span></p>
+          </div>
+        </div>
+      </div>
+      <!-- 修复：z-30 提升层级，p-4 扩大点击热区 -->
+      <div class="mt-auto flex justify-center animate-bounce text-[#8D8D8D] cursor-pointer relative z-30 p-4"
+        @click="$emit('next')">
+        <lucide-icon name="chevron-down"></lucide-icon>
+      </div>
+    </div>
+  </template>
+
+  <!-- 8. 结尾 (AI) -->
+  <template id="tpl-page8">
+    <div class="h-full flex flex-col px-6 pt-16 pb-12 relative">
+      <div
+        class="clay-object w-32 h-32 bg-[#A2D2FF] rounded-full top-[-20px] left-[-20px] animate-float opacity-50 blur-xl">
+      </div>
+      <div class="mb-6 text-center animate-pop relative z-10">
+        <h2 class="text-2xl font-bold text-[#8D8D8D] mb-1">启一年复始</h2>
+        <h1 class="text-4xl font-black text-[#5D5D5D]">待四序更新</h1>
+      </div>
+
+      <div
+        class="clay-card p-6 flex-1 flex flex-col items-center justify-center text-center relative z-10 animate-pop mb-6">
+        <div v-if="!blessingData && !loading" class="w-full">
+          <div
+            class="w-20 h-20 bg-gradient-to-tr from-[#FF9A9E] to-[#FECFEF] rounded-full mx-auto mb-4 flex items-center justify-center clay-object animate-float border-4 border-white">
+            <lucide-icon name="sparkles" class="text-white" :size="32"></lucide-icon>
+          </div>
+          <p class="text-[#8D8D8D] mb-6 font-medium text-sm">点击抽取你的2026医药人灵签</p>
+          <button @click="fetchBlessing"
+            class="w-full py-4 clay-btn clay-btn-primary text-lg flex items-center justify-center gap-2">
+            <lucide-icon name="sparkles" :size="20"></lucide-icon> 抽取祝福
+          </button>
+        </div>
+
+        <div v-if="loading" class="flex flex-col items-center">
+          <lucide-icon name="loader-2" class="animate-spin text-[#FF9F7F] mb-4" :size="40"></lucide-icon>
+          <p class="text-[#8D8D8D] font-bold text-sm">AI 正在连接未来...</p>
+        </div>
+
+        <div v-if="blessingData" class="w-full animate-pop">
+          <div class="bg-[#FF9F7F] text-white py-2 px-6 rounded-full inline-block mb-4 shadow-lg text-xl font-bold">
+            {{blessingData.blessing}}
+          </div>
+          <div class="bg-[#FFF0E5] p-4 rounded-xl mb-4 border border-white">
+            <p class="text-[#8B4513] font-medium leading-relaxed text-sm">
+              "{{blessingData.message}}"
+            </p>
+          </div>
+          <p class="text-xs text-[#8D8D8D] mb-4">2025，你辛苦了！</p>
+          <button @click="$emit('restart')" class="text-[#8D8D8D] text-xs underline">回看足迹</button>
+        </div>
+      </div>
+
+      <div class="flex gap-4 animate-pop z-10">
+        <button class="flex-1 py-3 clay-btn bg-white text-[#5D5D5D] flex items-center justify-center gap-2">
+          <lucide-icon name="refresh-cw" :size="16"></lucide-icon> 回看
+        </button>
+        <button class="flex-1 py-3 clay-btn clay-btn-blue flex items-center justify-center gap-2">
+          <lucide-icon name="share-2" :size="16"></lucide-icon> 分享
+        </button>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    // --- 图标组件封装 (修复版) ---
+    // 1. 移除 :class="class" 绑定，Vue 2 会自动合并 class
+    // 2. 移除 class props 定义，避免保留字冲突
+    // 3. 内部使用 span 容器包裹 SVG，避免替换容器导致的 DOM 丢失
+    Vue.component('lucide-icon', {
+      props: ['name', 'size'],
+      template: `<span ref="container" style="display: inline-flex; align-items: center; justify-content: center;"></span>`,
+      mounted() { this.updateIcon(); },
+      watch: {
+        name() { this.updateIcon(); },
+        size() { this.updateIcon(); }
+      },
+      methods: {
+        updateIcon() {
+          const container = this.$refs.container;
+          if (!container || !window.lucide) return;
+
+          // 清空容器，重建 SVG
+          container.innerHTML = '';
+
+          // 转换 kebab-case (message-circle) -> PascalCase (MessageCircle)
+          const iconName = this.name.replace(/(^\w|-\w)/g, m => m.replace('-', '').toUpperCase());
+          const iconNode = window.lucide.icons[iconName];
+
+          if (iconNode && window.lucide.createElement) {
+            const svg = window.lucide.createElement(iconNode);
+            svg.setAttribute('width', this.size || 24);
+            svg.setAttribute('height', this.size || 24);
+            // 确保颜色继承
+            if (!svg.getAttribute('stroke')) svg.setAttribute('stroke', 'currentColor');
+
+            container.appendChild(svg);
+          }
+        }
+      }
+    });
+
+    // --- 页面组件注册 ---
+    const Page1 = { template: '#tpl-page1' };
+    const Page2 = { template: '#tpl-page2', props: ['data'] };
+    const Page3 = { template: '#tpl-page3', props: ['data'] };
+    const Page4 = { template: '#tpl-page4', props: ['data'] };
+    const Page5 = { template: '#tpl-page5', props: ['data'] };
+    const Page6 = { template: '#tpl-page6', props: ['data'] };
+    const Page7 = { template: '#tpl-page7', props: ['data'] };
+    const Page8 = {
+      template: '#tpl-page8',
+      data() { return { loading: false, blessingData: null } },
+      methods: {
+        async fetchBlessing() {
+          this.loading = true;
+          const apiKey = ""; // API Key
+          // 模拟 API 调用
+          setTimeout(() => {
+            this.blessingData = { blessing: "业绩长虹", message: "愿新年胜旧年，欢愉且胜意" };
+            this.loading = false;
+          }, 1500);
+        }
+      }
+    };
+
+    // --- APP 实例 ---
+    new Vue({
+      el: '#app',
+      data: {
+        loading: true,
+        page: 0,
+        isPlaying: true,
+        totalPages: 8,
+        reportData: null,
+        // 触摸状态
+        touchStartY: 0,
+        touchEndY: 0
+      },
+      computed: {
+        currentPageComponent() {
+          const pages = [Page1, Page2, Page3, Page4, Page5, Page6, Page7, Page8];
+          return pages[this.page];
+        }
+      },
+      mounted() {
+        this.initData();
+        // 注意：这里不再调用全局的 lucide.createIcons()，避免冲突
+      },
+      methods: {
+        async initData() {
+          // 模拟后端请求
+          setTimeout(() => {
+            this.reportData = {
+              name: "孙代表",
+              joinDate: "2021年07月19日",
+              joinDays: 1256,
+              hospitals: 5, customers: 80, touchCount: 75, touchRate: 93.5, monthlyTouch: 65,
+              rank: 168, beatPercentage: 85, levelUpCount: 12, newCultivate: 5,
+              totalVisits: 1200, visitCustomers: 150, keyVisits: 80, earlyVisitTime: "06:20",
+              earlyVisitDate: "7月8日", lateVisitTime: "23:50", lateVisitDate: "11月3日",
+              totalMeetings: 150, meetingRank: 160, meetingBeat: 95,
+              meetingCities: ["北京", "上海", "广州", "成都", "武汉"],
+              maxMeetingMonth: "7月", maxMeetingCount: 27, inviteCount: 228, inviteTotal: 1579,
+              promotionTimes: 1, levelUp: 1, gradeUp: 2, posts: 63, likes: 230, points: 1128,
+              checkInDays: 105, checkInPosts: 120
+            };
+            this.loading = false;
+          }, 1000);
+        },
+        toggleMusic() {
+          this.isPlaying = !this.isPlaying;
+        },
+        nextPage() {
+          if (this.page < this.totalPages - 1) this.page++;
+        },
+        prevPage() {
+          if (this.page > 0) this.page--;
+        },
+        restart() {
+          this.page = 0;
+        },
+        // --- 触摸事件 ---
+        onTouchStart(e) {
+          this.touchStartY = e.changedTouches[0].clientY;
+        },
+        onTouchMove(e) {
+          this.touchEndY = e.changedTouches[0].clientY;
+        },
+        onTouchEnd() {
+          const distance = this.touchStartY - this.touchEndY;
+          const threshold = 50; // 滑动阈值
+          if (distance > threshold) {
+            this.nextPage(); // 上滑 -> 下一页
+          } else if (distance < -threshold) {
+            this.prevPage(); // 下滑 -> 上一页
+          }
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

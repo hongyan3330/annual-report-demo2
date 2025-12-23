@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f3f4f6;
+}
+
+/* 移除 vant toast 的层级问题 */
+.van-toast {
+  z-index: 10000 !important;
+}
