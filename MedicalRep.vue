@@ -157,7 +157,7 @@
         <div v-else-if="page === 4" key="p5" class="flex flex-col justify-center px-6 relative">
           <div class="clay-sphere w-32 h-32 bg-purple-100 top-[-20px] right-[-20px] animate-float opacity-50"></div>
           <div class="mb-6 animate-pop relative z-10">
-            <h2 class="text-3xl font-black text-gray-800">提级 & 新增</h2>
+            <h2 class="text-3xl font-black text-gray-800">客户提及&新增</h2>
           </div>
 
           <div class="clay-card p-6 mb-6 animate-pop relative z-10">
@@ -177,7 +177,7 @@
           <div class="clay-card p-6 animate-pop relative z-10" style="animation-delay: 0.1s">
             <p class="text-sm text-gray-600 leading-relaxed mb-4 font-bold">"你的微笑和坚持，是70%的行动量+30%的方法！"</p>
             <div class="text-right">
-              <span class="inline-block bg-[#FF7E5F] text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+              <span class="text-[#FF7E5F] font-black text-lg">
                 先动起来，再完美！
               </span>
             </div>
@@ -216,11 +216,7 @@
           </div>
 
           <div class="clay-card p-6 text-center animate-pop" style="animation-delay: 0.1s">
-            <div class="mb-2">
-              <span class="inline-block px-3 py-1 bg-gray-100 text-gray-500 rounded text-xs font-bold tracking-wider">
-                评级：{{ data['拜访排名分类'] }}
-              </span>
-            </div>
+
             <p class="text-gray-800 font-bold text-lg leading-relaxed">
               <!--拜访排名分类-->
               <template v-if="data['拜访排名分类'] === '优'">"星光不问赶路人，时光不负奋斗者"</template>
@@ -363,7 +359,7 @@
               </span>
             </div>
           </div>
-          <div class="bg-white/40 p-6 rounded-3xl text-center animate-pop" style="animation-delay: 0.1s">
+          <div class="clay-card p-6 text-center animate-pop" style="animation-delay: 0.1s">
             <p class="text-gray-600 font-bold text-sm leading-loose">
               山高路远，止不住行者征程
               <br />
@@ -420,9 +416,12 @@
         <!-- Part 12: 忙碌月份 -->
         <div v-else-if="page === 11" key="p12" class="flex flex-col justify-center px-6 relative">
           <div class="clay-sphere w-48 h-48 bg-red-100 bottom-[-40px] left-[-40px] animate-float opacity-40"></div>
+          <div class="mb-6 animate-pop relative z-10">
+            <h2 class="text-3xl font-black text-gray-800">会议场次最多</h2>
+          </div>
           <div class="clay-card p-8 text-center animate-pop relative z-10">
             <p class="text-gray-400 text-xs mb-4 uppercase tracking-widest">Busiest Month</p>
-            <h2 class="text-6xl font-black text-[#FF7E5F] mb-2">{{ data['会议场次最多的月份'] | formatDate('M') }}月</h2>
+            <h2 class="text-6xl font-black text-[#FF7E5F] mb-2">{{ data['会议场次最多'] | formatDate('M') }}月</h2>
             <p class="text-gray-800 font-bold text-lg mb-8">累计召开 {{ data['会议场次最多月份的会议场次'] }} 场会议</p>
             <div class="bg-gray-50 p-4 rounded-2xl">
               <p class="text-sm text-gray-600 font-bold">
@@ -448,11 +447,8 @@
 
         <!-- Part 13: 邀请客户 -->
         <div v-else-if="page === 12" key="p13" class="flex flex-col justify-center px-6 relative">
-          <div class="text-center animate-pop mb-8 relative z-10">
-            <div class="w-16 h-16 bg-blue-100 rounded-full mx-auto mb-4 flex items-center justify-center shadow-md">
-              <LucideIcon name="users" :size="32" class="text-blue-500" />
-            </div>
-            <h2 class="text-3xl font-black text-gray-800">共赴山海</h2>
+          <div class="mb-8 animate-pop relative z-10">
+            <h2 class="text-3xl font-black text-gray-800">邀请客户参会</h2>
           </div>
           <div class="clay-card p-8 animate-pop relative z-10">
             <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-4">
@@ -488,31 +484,38 @@
             </div>
 
             <template v-if="data['任职资格累计提升次数'] > 0">
-              <h2 class="text-2xl font-black text-gray-800 mb-2">任职资格提升</h2>
-              <p class="text-6xl font-black text-[#FF7E5F] mb-6">
-                {{ data['任职资格累计提升次数'] }}
-                <span class="text-base text-gray-400 font-normal">次</span>
-              </p>
-              <div class="flex justify-center gap-3 mb-6">
-                <span class="px-4 py-2 bg-[#DCFCE7] text-[#15803D] rounded-xl text-xs font-bold shadow-sm">
-                  等级 +{{ data['任职提升累计提升等级'] }}
-                </span>
-                <span class="px-4 py-2 bg-[#DCFCE7] text-[#15803D] rounded-xl text-xs font-bold shadow-sm">
-                  档位 +{{ data['任职提升累计提升档位'] }}
-                </span>
+              <p class="text-gray-500 text-sm mb-2">2025年</p>
+              <h2 class="text-2xl font-black text-gray-800 mb-4">
+                你的任职资格提升
+                <span class="text-[#FF7E5F] text-3xl mx-1">{{ data['任职资格累计提升次数'] }}</span>
+                次
+              </h2>
+              
+              <div class="bg-white/50 rounded-2xl p-4 mb-6 space-y-2">
+                <p class="text-gray-700 font-bold">
+                  提升了 <span class="text-[#15803D]">{{ data['任职提升累计提升等级'] }}</span> 个等级
+                </p>
+                <div class="w-full h-px bg-gray-200"></div>
+                <p class="text-gray-700 font-bold">
+                  提升了 <span class="text-[#15803D]">{{ data['任职提升累计提升档位'] }}</span> 个档位
+                </p>
               </div>
-              <p class="text-sm text-gray-500 italic">"若生来就是太阳，便无需为照耀万物而致歉"</p>
+
+              <p class="text-sm text-gray-500 italic leading-relaxed">
+                "若生来就是太阳
+                <br />
+                便无需为照耀万物而致歉"
+              </p>
             </template>
 
             <template v-else>
-              <h2 class="text-2xl font-black text-gray-800 mb-4">沉淀的一年</h2>
-              <p class="text-gray-600 leading-relaxed mb-6">
-                2025年
+              <p class="text-gray-500 text-sm mb-4">2025年</p>
+              <h2 class="text-2xl font-black text-gray-800 mb-8">你没有任职资格的提升</h2>
+              
+              <p class="text-gray-600 leading-loose italic">
+                "慢也好
                 <br />
-                你没有任职资格的提升
-              </p>
-              <p class="text-sm text-gray-500 leading-relaxed">
-                "慢也好，步子小也好
+                步子小也好
                 <br />
                 是在往前走就好"
               </p>
@@ -640,7 +643,7 @@
 
               <div class="flex gap-3 w-full">
                 <button
-                  class="flex-1 py-3 bg-white text-gray-600 rounded-2xl font-bold text-sm shadow-sm border border-gray-200"
+                  class="flex-1 py-3 bg-white text-gray-600 rounded-[24px] font-bold text-sm shadow-sm border border-gray-200"
                   @click="restart"
                 >
                   回看
@@ -717,14 +720,27 @@ export default {
     // 动态背景类
     themeClass() {
       const p = this.page;
-      if (p === 1) return 'theme-part2';
-      if (p === 2) return 'theme-road'; // 相遇页
-      if (p === 3) return 'theme-part4'; // 分管版图
-      if (p === 7) return 'theme-night';
-      if ([4, 11, 13].includes(p)) return 'theme-growth';
-      if ([5, 6, 14, 15].includes(p)) return 'theme-work';
-      if (p === 8) return 'theme-academic';
-      if ([9, 10, 12].includes(p)) return 'theme-meeting';
+      const themeMap = {
+        1: 'theme-part2',
+        2: 'theme-road',
+        3: 'theme-part4',
+        4: 'theme-part5',
+        5: 'theme-part6',
+        6: 'theme-part7',
+        7: 'theme-part8',
+        8: 'theme-part9',
+        9: 'theme-part10',
+        10: 'theme-part11',
+        11: 'theme-part12',
+        12: 'theme-part13',
+        13: 'theme-part14',
+        14: 'theme-part15',
+        15: 'theme-part16',
+        16: 'theme-part17',
+        17: 'theme-part18'
+      };
+      
+      if (themeMap[p]) return themeMap[p];
       return 'theme-intro';
     }
   },
@@ -812,37 +828,60 @@ export default {
   background-image: url("@/assets/Part4_M_bg.jpg");
 }
 
-.theme-meeting::before {
-  background-image: url("@/assets/part1_bg.jpg");
-  filter: hue-rotate(160deg) saturate(0.8);
+.theme-part5::before {
+  background-image: url("@/assets/Part5_M_bg.jpg");
 }
 
-.theme-work::before {
-  background-image: url("@/assets/part1_bg.jpg");
-  filter: hue-rotate(80deg) saturate(0.9);
+.theme-part6::before {
+  background-image: url("@/assets/Part6_M_bg.jpg");
 }
 
-.theme-growth::before {
-  background-image: url("@/assets/part1_bg.jpg");
-  filter: hue-rotate(-20deg) brightness(1.05);
+.theme-part7::before {
+  background-image: url("@/assets/Part7_M_bg.jpg");
 }
 
-.theme-academic::before {
-  background-image: url("@/assets/part1_bg.jpg");
-  filter: hue-rotate(190deg) brightness(0.95);
+.theme-part8::before {
+  background-image: url("@/assets/Part8_M_bg.jpg");
 }
 
-.theme-night::before {
-  background-image: url("@/assets/part1_bg.jpg");
-  filter: brightness(0.4) hue-rotate(210deg) saturate(0.6);
+.theme-part9::before {
+  background-image: url("@/assets/Part9_M_bg.jpg");
 }
 
-.theme-night::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  z-index: 1;
+.theme-part10::before {
+  background-image: url("@/assets/Part10_M_bg.jpg");
+}
+
+.theme-part11::before {
+  background-image: url("@/assets/Part11_M_bg.jpg");
+}
+
+.theme-part12::before {
+  background-image: url("@/assets/Part12_M_bg.jpg");
+}
+
+.theme-part13::before {
+  background-image: url("@/assets/Part13_M_bg.jpg");
+}
+
+.theme-part14::before {
+  background-image: url("@/assets/Part14_M_bg.jpg");
+}
+
+.theme-part15::before {
+  background-image: url("@/assets/Part15_M_bg.jpg");
+}
+
+.theme-part16::before {
+  background-image: url("@/assets/Part16_M_bg.jpg");
+}
+
+.theme-part17::before {
+  background-image: url("@/assets/Part17_M_bg.jpg");
+}
+
+.theme-part18::before {
+  background-image: url("@/assets/Part18_M_bg.jpg");
 }
 
 .container {

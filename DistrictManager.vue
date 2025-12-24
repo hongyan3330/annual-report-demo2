@@ -694,7 +694,8 @@ export default {
       if (p === 1) return 'theme-part2';
       if (p === 2) return 'theme-road'; // 起点页
       if (p === 3) return 'theme-team'; // 团队的力量
-      if ([4, 6, 11].includes(p)) return 'theme-growth';
+      if (p === 4) return 'theme-part5';
+      if ([6, 11].includes(p)) return 'theme-growth';
       if ([5, 7, 13].includes(p)) return 'theme-work';
       if (p === 8) return 'theme-academic';
       if ([9, 10, 12].includes(p)) return 'theme-meeting';
@@ -779,6 +780,10 @@ export default {
 
 .theme-team::before {
   background-image: url("@/assets/part4_D_bg.jpg");
+}
+
+.theme-part5::before {
+  background-image: url("@/assets/Part5_D_bg.jpg");
 }
 
 .theme-meeting::before {
