@@ -779,7 +779,7 @@ export default {
 }
 
 .theme-team::before {
-  background-image: url("@/assets/part4_D_bg.jpg");
+  background-image: url("@/assets/Part4_D_bg.jpg");
 }
 
 .theme-part5::before {
