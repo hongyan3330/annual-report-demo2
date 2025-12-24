@@ -14,7 +14,7 @@
 
     <!-- 页面内容容器：flex-1 占据剩余空间 -->
     <div
-      class="container flex-1 relative overflow-hidden"
+      class="container flex-1 relative overflow-hidden z-10"
       @touchstart="ts"
       @touchmove="tm"
       @touchend="te"
@@ -643,12 +643,12 @@
 
               <div class="flex gap-3 w-full">
                 <button
-                  class="flex-1 py-3 bg-white text-gray-600 rounded-[24px] font-bold text-sm shadow-sm border border-gray-200"
+                  class="flex-1 py-3 bg-white text-gray-600 rounded-full font-bold text-sm shadow-sm border border-gray-200"
                   @click="restart"
                 >
                   回看
                 </button>
-                <button class="flex-1 py-3 clay-btn rounded-2xl text-sm flex items-center justify-center gap-2" @click="share">
+                <button class="flex-1 py-3 clay-btn rounded-full text-sm flex items-center justify-center gap-2" @click="share">
                   <LucideIcon name="share-2" :size="14" />
                   分享
                 </button>
@@ -719,29 +719,9 @@ export default {
     },
     // 动态背景类
     themeClass() {
-      const p = this.page;
-      const themeMap = {
-        1: 'theme-part2',
-        2: 'theme-road',
-        3: 'theme-part4',
-        4: 'theme-part5',
-        5: 'theme-part6',
-        6: 'theme-part7',
-        7: 'theme-part8',
-        8: 'theme-part9',
-        9: 'theme-part10',
-        10: 'theme-part11',
-        11: 'theme-part12',
-        12: 'theme-part13',
-        13: 'theme-part14',
-        14: 'theme-part15',
-        15: 'theme-part16',
-        16: 'theme-part17',
-        17: 'theme-part18'
-      };
-      
-      if (themeMap[p]) return themeMap[p];
-      return 'theme-intro';
+      // page 0 -> Part1, page 1 -> Part2, ..., page 17 -> Part18
+      const partNum = this.page + 1;
+      return `theme-part${partNum}`;
     }
   },
   mounted() {
@@ -812,16 +792,16 @@ export default {
 }
 
 /* --- 主题背景配置 --- */
-.theme-intro::before {
-  background-image: url("@/assets/part1_bg.jpg");
+.theme-part1::before {
+  background-image: url("@/assets/part1_M_bg.jpg");
 }
 
 .theme-part2::before {
-  background-image: url("@/assets/part2_bg.jpg");
+  background-image: url("@/assets/part2_M_bg.jpg");
 }
 
-.theme-road::before {
-  background-image: url("@/assets/part3_bg.jpg");
+.theme-part3::before {
+  background-image: url("@/assets/part3_M_bg.jpg");
 }
 
 .theme-part4::before {

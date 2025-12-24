@@ -14,7 +14,7 @@
     </button>
     <!-- 页面内容容器：flex-1 占据剩余空间 -->
     <div
-      class="container flex-1 relative overflow-hidden"
+      class="container flex-1 relative overflow-hidden z-10"
       @touchstart="ts"
       @touchmove="tm"
       @touchend="te"
@@ -116,7 +116,7 @@
               <div class="w-12 h-12 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center">👨‍💼</div>
               <div class="w-12 h-12 rounded-full bg-green-100 border-2 border-white flex items-center justify-center">🧑‍💼</div>
             </div>
-            <p class="text-gray-500 text-sm mb-2">2025年 {{ data['所属区域名称'] }}</p>
+            <p class="text-gray-500 text-sm mb-2">2025年 {{ data['所属部门名称'] }}</p>
             <p class="text-xl font-bold text-gray-800 mb-6">
               共有
               <span class="text-4xl font-black text-[#FF7E5F]">{{ data['地区代表数'] }}</span>
@@ -137,11 +137,12 @@
         </div>
 
         <!-- Part 5: 市场开拓 (DM专属) -->
-        <div v-else-if="page === 4" key="p5" class="flex flex-col justify-center px-6 relative">
+        <div v-else-if="page === 4" key="p5" class="flex flex-col justify-center px-6 relative pb-20">
           <div class="mb-6 animate-pop">
             <h2 class="text-3xl font-black text-gray-800">市场开拓</h2>
           </div>
           <div class="clay-card p-6 mb-4 animate-pop">
+            <p class="text-xs text-[#FF7E5F] font-bold mb-4">{{ data['所属部门名称'] }}</p>
             <div class="flex items-center justify-between mb-4">
               <span class="text-sm text-gray-500">已开发医院总数</span>
               <span class="text-3xl font-black text-gray-800">
@@ -195,13 +196,13 @@
         </div>
 
         <!-- Part 6: 分管 -->
-        <div v-else-if="page === 5" key="p6" class="flex flex-col justify-center px-6 relative">
+        <div v-else-if="page === 5" key="p6" class="flex flex-col justify-center px-6 relative pb-20">
           <div class="mb-6 animate-pop">
             <span class="inline-block px-3 py-1 bg-white/60 rounded-full text-xs text-gray-500 font-bold mb-2">2025 · 经营</span>
             <h2 class="text-3xl font-black text-gray-800">分管数据</h2>
           </div>
 
-          <div class="clay-card p-6 mb-6 animate-pop">
+          <div class="clay-card p-6 mb-4 animate-pop">
             <div class="flex justify-between items-start mb-6">
               <div class="text-center flex-1">
                 <p class="text-gray-500 text-xs mb-1">分管医院</p>
@@ -239,15 +240,19 @@
               <p class="text-[10px] text-gray-400">超过全国约 {{ data['月均触碰客户数全国排名击败比例'] }}% 的地区</p>
             </div>
           </div>
-          <div class="text-center animate-pop" style="animation-delay: 0.1s">
-            <p class="text-xs text-gray-400">所有成功都不会白费，真正的成功从来不是偶然</p>
+          <div class="clay-card p-6 text-center animate-pop mt-0" style="animation-delay: 0.1s">
+            <p class="text-xs text-gray-400 leading-relaxed">
+              "所有成功都不会白费
+              <br />
+              真正的成功从来不是偶然"
+            </p>
           </div>
         </div>
 
         <!-- Part 7: 客户提级 -->
         <div v-else-if="page === 6" key="p7" class="flex flex-col justify-center px-6 relative">
           <div class="mb-6 animate-pop relative z-10">
-            <h2 class="text-3xl font-black text-gray-800">提级 & 新增</h2>
+            <h2 class="text-3xl font-black text-gray-800">客户提级 & 新增</h2>
           </div>
 
           <div class="clay-card p-6 mb-6 animate-pop relative z-10">
@@ -289,15 +294,15 @@
             </div>
             <div class="grid grid-cols-3 gap-2 text-center">
               <div>
-                <p class="text-lg font-black">{{ data['拜访次数'] }}</p>
+                <p class="text-lg font-black h-7 leading-7">{{ data['拜访次数'] || data.personalVisits || 0 }}</p>
                 <p class="text-[10px] text-gray-400">总次数</p>
               </div>
               <div>
-                <p class="text-lg font-black">{{ data['拜访客户数'] }}</p>
+                <p class="text-lg font-black h-7 leading-7">{{ data['拜访客户数'] || data.visitCustomers || 0 }}</p>
                 <p class="text-[10px] text-gray-400">客户数</p>
               </div>
               <div>
-                <p class="text-lg font-black">{{ data['月均拜访客户数'] }}</p>
+                <p class="text-lg font-black h-7 leading-7">{{ data['月均拜访客户数'] || data['月均拜访次数'] || data.monthlyVisit || 0 }}</p>
                 <p class="text-[10px] text-gray-400">月均</p>
               </div>
             </div>
@@ -310,23 +315,22 @@
             </div>
             <div class="grid grid-cols-3 gap-2 text-center">
               <div>
-                <p class="text-lg font-black">{{ data['协访次数'] }}</p>
+                <p class="text-lg font-black h-7 leading-7">{{ data['协访次数'] || data['团队协访次数'] || data.coVisits || 0 }}</p>
                 <p class="text-[10px] text-gray-400">总次数</p>
               </div>
               <div>
-                <p class="text-lg font-black">{{ data['协访客户数'] }}</p>
+                <p class="text-lg font-black h-7 leading-7">{{ data['协访客户数'] || data['团队协访客户数'] || data.coVisitCustomers || 0 }}</p>
                 <p class="text-[10px] text-gray-400">客户数</p>
               </div>
               <div>
-                <p class="text-lg font-black">{{ data['月均协访客户数'] }}</p>
+                <p class="text-lg font-black h-7 leading-7">{{ data['月均协访客户数'] || data['月均协访次数'] || data.monthlyCoVisit || 0 }}</p>
                 <p class="text-[10px] text-gray-400">月均</p>
               </div>
             </div>
           </div>
 
-          <div class="bg-white/40 p-4 rounded-2xl text-center animate-pop" style="animation-delay: 0.2s">
-            <p class="text-gray-800 font-bold text-sm leading-relaxed">
-              <!--拜访排名分类-->
+          <div class="clay-card p-6 text-center animate-pop mt-4" style="animation-delay: 0.2s">
+            <p class="text-gray-800 font-bold text-lg leading-relaxed">
               <template v-if="data['拜访排名分类'] === '优'">"每一步向前走，不畏将来、不念过往"</template>
               <template v-else-if="data['拜访排名分类'] === '良'">
                 "前路或许有雾有霜，
@@ -415,8 +419,8 @@
               </span>
             </div>
           </div>
-          <div class="bg-white/40 p-6 rounded-3xl text-center animate-pop" style="animation-delay: 0.1s">
-            <p class="text-gray-600 font-bold text-sm leading-loose">
+          <div class="clay-card p-6 text-center animate-pop mt-2" style="animation-delay: 0.1s">
+            <p class="text-gray-800 font-bold text-lg leading-relaxed">
               有风有雨是常态
               <br />
               风雨兼程是状态
@@ -473,6 +477,9 @@
 
         <!-- Part 12: 忙碌月份 -->
         <div v-else-if="page === 11" key="p12" class="flex flex-col justify-center px-6 relative">
+          <div class="mb-6 animate-pop">
+            <h2 class="text-3xl font-black text-gray-800">会议场次最多</h2>
+          </div>
           <div class="clay-sphere w-48 h-48 bg-red-100 bottom-[-40px] left-[-40px] animate-float opacity-40"></div>
           <div class="clay-card p-8 text-center animate-pop relative z-10">
             <p class="text-gray-400 text-xs mb-4 uppercase tracking-widest">Busiest Month</p>
@@ -501,38 +508,33 @@
         </div>
 
         <!-- Part 13: 邀请客户 -->
-        <div v-else-if="page === 12" key="p13" class="flex flex-col justify-center px-6 relative">
-          <div class="text-center animate-pop mb-8 relative z-10">
-            <div class="w-16 h-16 bg-blue-100 rounded-full mx-auto mb-4 flex items-center justify-center shadow-md">
-              <LucideIcon name="users" :size="32" class="text-blue-500" />
-            </div>
-            <h2 class="text-3xl font-black text-gray-800">共赴山海</h2>
+        <div v-else-if="page === 12" key="p13" class="flex flex-col justify-center px-6 relative pb-20">
+          <div class="mb-6 animate-pop relative z-10">
+            <h2 class="text-3xl font-black text-gray-800">邀请客户参会</h2>
           </div>
           <div class="clay-card p-8 animate-pop relative z-10">
-            <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-4">
+            <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-6">
               <span class="text-gray-500 text-sm">邀请客户</span>
-              <span class="text-2xl font-black text-gray-800">
-                {{ data['邀请参会的客户数'] }}
+              <span class="text-3xl font-black text-gray-800">
+                {{ data['邀请参会的客户数'] || 0 }}
                 <span class="text-xs font-normal text-gray-400">位</span>
               </span>
             </div>
-            <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-4">
+            <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-6">
               <span class="text-gray-500 text-sm">累计人次</span>
-              <span class="text-2xl font-black text-gray-800">{{ data['邀请参会的人次数'] }}</span>
+              <span class="text-3xl font-black text-gray-800">{{ data['邀请参会的人次数'] || 0 }}</span>
             </div>
             <div class="flex justify-between items-center">
               <span class="text-gray-500 text-sm">参与会议</span>
-              <span class="text-2xl font-black text-gray-800">
-                {{ data['邀请参会的会议数'] }}
+              <span class="text-3xl font-black text-gray-800">
+                {{ data['邀请参会的会议数'] || 0 }}
                 <span class="text-xs font-normal text-gray-400">场</span>
               </span>
             </div>
           </div>
           <div class="mt-8 text-center animate-pop relative z-10" style="animation-delay: 0.1s">
             <p class="text-[#FF7E5F] font-bold text-sm">
-              "所有扎根的付出，终会破土成荫
-              <br />
-              真正的幸运从来都藏在坚持里"
+              "进取点点星铺路，步履稳踏自成功"
             </p>
           </div>
         </div>
@@ -623,12 +625,12 @@
 
               <div class="flex gap-3 w-full">
                 <button
-                  class="flex-1 py-3 bg-white text-gray-600 rounded-2xl font-bold text-sm shadow-sm border border-gray-200"
+                  class="flex-1 py-3 bg-white text-gray-600 rounded-full font-bold text-sm shadow-sm border border-gray-200"
                   @click="restart"
                 >
                   回看
                 </button>
-                <button class="flex-1 py-3 clay-btn rounded-2xl text-sm flex items-center justify-center gap-2" @click="share">
+                <button class="flex-1 py-3 clay-btn rounded-full text-sm flex items-center justify-center gap-2" @click="share">
                   <LucideIcon name="share-2" :size="14" />
                   分享
                 </button>
@@ -690,16 +692,9 @@ export default {
   computed: {
     // 动态背景类
     themeClass() {
-      const p = this.page;
-      if (p === 1) return 'theme-part2';
-      if (p === 2) return 'theme-road'; // 起点页
-      if (p === 3) return 'theme-team'; // 团队的力量
-      if (p === 4) return 'theme-part5';
-      if ([6, 11].includes(p)) return 'theme-growth';
-      if ([5, 7, 13].includes(p)) return 'theme-work';
-      if (p === 8) return 'theme-academic';
-      if ([9, 10, 12].includes(p)) return 'theme-meeting';
-      return 'theme-intro';
+      // page 0 -> Part1, page 1 -> Part2, ...
+      const partNum = this.page + 1;
+      return `theme-part${partNum}`;
     }
   },
   mounted() {
@@ -766,19 +761,19 @@ export default {
 }
 
 /* --- 主题背景配置 --- */
-.theme-intro::before {
-  background-image: url("@/assets/part1_bg.jpg");
+.theme-part1::before {
+  background-image: url("@/assets/part1_D_bg.jpg");
 }
 
 .theme-part2::before {
-  background-image: url("@/assets/part2_bg.jpg");
+  background-image: url("@/assets/part2_D_bg.jpg");
 }
 
-.theme-road::before {
-  background-image: url("@/assets/part3_bg.jpg");
+.theme-part3::before {
+  background-image: url("@/assets/part3_D_bg.jpg");
 }
 
-.theme-team::before {
+.theme-part4::before {
   background-image: url("@/assets/Part4_D_bg.jpg");
 }
 
@@ -786,24 +781,48 @@ export default {
   background-image: url("@/assets/Part5_D_bg.jpg");
 }
 
-.theme-meeting::before {
-  background-image: url("@/assets/part1_bg.jpg");
-  filter: hue-rotate(160deg) saturate(0.8);
+.theme-part6::before {
+  background-image: url("@/assets/Part6_D_bg.jpg");
 }
 
-.theme-work::before {
-  background-image: url("@/assets/part1_bg.jpg");
-  filter: hue-rotate(80deg) saturate(0.9);
+.theme-part7::before {
+  background-image: url("@/assets/Part7_D_bg.jpg");
 }
 
-.theme-growth::before {
-  background-image: url("@/assets/part1_bg.jpg");
-  filter: hue-rotate(-20deg) brightness(1.05);
+.theme-part8::before {
+  background-image: url("@/assets/Part8_D_bg.jpg");
 }
 
-.theme-academic::before {
-  background-image: url("@/assets/part1_bg.jpg");
-  filter: hue-rotate(190deg) brightness(0.95);
+.theme-part9::before {
+  background-image: url("@/assets/Part9_D_bg.jpg");
+}
+
+.theme-part10::before {
+  background-image: url("@/assets/Part10_D_bg.jpg");
+}
+
+.theme-part11::before {
+  background-image: url("@/assets/Part11_D_bg.jpg");
+}
+
+.theme-part12::before {
+  background-image: url("@/assets/Part12_D_bg.jpg");
+}
+
+.theme-part13::before {
+  background-image: url("@/assets/Part13_D_bg.jpg");
+}
+
+.theme-part14::before {
+  background-image: url("@/assets/Part14_D_bg.jpg");
+}
+
+.theme-part15::before {
+  background-image: url("@/assets/Part15_D_bg.jpg");
+}
+
+.theme-part16::before {
+  background-image: url("@/assets/Part16_D_bg.jpg");
 }
 
 .container {
