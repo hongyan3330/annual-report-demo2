@@ -717,7 +717,14 @@ export default {
     // 动态背景类
     themeClass() {
       const p = this.page;
+      if (p === 1) return 'theme-part2';
+      if (p === 2) return 'theme-road'; // 相遇页
+      if (p === 3) return 'theme-part4'; // 分管版图
       if (p === 7) return 'theme-night';
+      if ([4, 11, 13].includes(p)) return 'theme-growth';
+      if ([5, 6, 14, 15].includes(p)) return 'theme-work';
+      if (p === 8) return 'theme-academic';
+      if ([9, 10, 12].includes(p)) return 'theme-meeting';
       return 'theme-intro';
     }
   },
@@ -784,36 +791,49 @@ export default {
     background-position: center;
     transition: all 0.8s ease;
     z-index: 0;
+    opacity: 0.6;
   }
 }
 
 /* --- 主题背景配置 --- */
 .theme-intro::before {
-  background-image: url("@/assets/medical_rep_bg.jpg");
+  background-image: url("@/assets/part1_bg.jpg");
+}
+
+.theme-part2::before {
+  background-image: url("@/assets/part2_bg.jpg");
+}
+
+.theme-road::before {
+  background-image: url("@/assets/part3_bg.jpg");
+}
+
+.theme-part4::before {
+  background-image: url("@/assets/Part4_M_bg.jpg");
 }
 
 .theme-meeting::before {
-  background-image: url("@/assets/medical_rep_bg.jpg");
+  background-image: url("@/assets/part1_bg.jpg");
   filter: hue-rotate(160deg) saturate(0.8);
 }
 
 .theme-work::before {
-  background-image: url("@/assets/medical_rep_bg.jpg");
+  background-image: url("@/assets/part1_bg.jpg");
   filter: hue-rotate(80deg) saturate(0.9);
 }
 
 .theme-growth::before {
-  background-image: url("@/assets/medical_rep_bg.jpg");
+  background-image: url("@/assets/part1_bg.jpg");
   filter: hue-rotate(-20deg) brightness(1.05);
 }
 
 .theme-academic::before {
-  background-image: url("@/assets/medical_rep_bg.jpg");
+  background-image: url("@/assets/part1_bg.jpg");
   filter: hue-rotate(190deg) brightness(0.95);
 }
 
 .theme-night::before {
-  background-image: url("@/assets/medical_rep_bg.jpg");
+  background-image: url("@/assets/part1_bg.jpg");
   filter: brightness(0.4) hue-rotate(210deg) saturate(0.6);
 }
 

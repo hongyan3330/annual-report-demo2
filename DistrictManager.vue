@@ -2,17 +2,16 @@
   <div :class="['w-full h-full relative flex flex-col district-manager-bg', themeClass]">
     <!-- 左上角：上一页按钮 -->
     <!-- 音乐按钮已在父组件 index.vue 处理 -->
-    <button v-if="page > 0" @click="prev" class="absolute top-[16px] left-[16px] control-btn-circle  z-50" aria-label="上一页">
+    <button v-if="page > 0" @click="prev" class="absolute top-[16px] left-[16px] z-50 control-btn-top">
       <LucideIcon name="chevron-left" :size="20" class="text-[#FF7E5F]" />
     </button>
     <button
       @click="close"
-      :class="['absolute', 'top-[16px]', page === 0 ? 'left-[16px]' : 'left-[70px]', 'control-btn-circle', 'z-50']"
+      :class="['absolute', 'top-[16px]', page === 0 ? 'left-[16px]' : 'left-[70px]', 'control-btn-top', 'z-50']"
       aria-label="关闭"
     >
       <LucideIcon name="x" :size="20" class="text-[#FF7E5F]" />
     </button>
-
     <!-- 页面内容容器：flex-1 占据剩余空间 -->
     <div
       class="container flex-1 relative overflow-hidden"
@@ -691,6 +690,14 @@ export default {
   computed: {
     // 动态背景类
     themeClass() {
+      const p = this.page;
+      if (p === 1) return 'theme-part2';
+      if (p === 2) return 'theme-road'; // 起点页
+      if (p === 3) return 'theme-team'; // 团队的力量
+      if ([4, 6, 11].includes(p)) return 'theme-growth';
+      if ([5, 7, 13].includes(p)) return 'theme-work';
+      if (p === 8) return 'theme-academic';
+      if ([9, 10, 12].includes(p)) return 'theme-meeting';
       return 'theme-intro';
     }
   },
@@ -753,31 +760,44 @@ export default {
     background-position: center;
     transition: all 0.8s ease;
     z-index: 0;
+    opacity: 0.6;
   }
 }
 
 /* --- 主题背景配置 --- */
 .theme-intro::before {
-  background-image: url("@/assets/medical_rep_bg.jpg");
+  background-image: url("@/assets/part1_bg.jpg");
+}
+
+.theme-part2::before {
+  background-image: url("@/assets/part2_bg.jpg");
+}
+
+.theme-road::before {
+  background-image: url("@/assets/part3_bg.jpg");
+}
+
+.theme-team::before {
+  background-image: url("@/assets/part4_D_bg.jpg");
 }
 
 .theme-meeting::before {
-  background-image: url("@/assets/medical_rep_bg.jpg");
+  background-image: url("@/assets/part1_bg.jpg");
   filter: hue-rotate(160deg) saturate(0.8);
 }
 
 .theme-work::before {
-  background-image: url("@/assets/medical_rep_bg.jpg");
+  background-image: url("@/assets/part1_bg.jpg");
   filter: hue-rotate(80deg) saturate(0.9);
 }
 
 .theme-growth::before {
-  background-image: url("@/assets/medical_rep_bg.jpg");
+  background-image: url("@/assets/part1_bg.jpg");
   filter: hue-rotate(-20deg) brightness(1.05);
 }
 
 .theme-academic::before {
-  background-image: url("@/assets/medical_rep_bg.jpg");
+  background-image: url("@/assets/part1_bg.jpg");
   filter: hue-rotate(190deg) brightness(0.95);
 }
 
@@ -828,26 +848,25 @@ export default {
   box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* --- 顶部控制按钮 (圆形) --- */
-.control-btn-circle {
-  width: 44px;
-  height: 44px;
+/* --- 顶部控制按钮 (新增样式) --- */
+.control-btn-top {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
+  /* 圆形，与音乐图标一致 */
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 6px 6px 12px rgba(174, 174, 192, 0.2), -4px -4px 10px rgba(255, 255, 255, 1);
-  border: 2px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: all 0.2s;
   color: #4b5563;
-  /* 深灰色图标，确保对比度 */
-  cursor: pointer;
 }
 
-.control-btn-circle:active {
+.control-btn-top:active {
   transform: scale(0.9);
-  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.6);
 }
 
 /* --- 底部下一页按钮 (悬浮胶囊) --- */

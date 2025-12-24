@@ -11,6 +11,7 @@
     <div class="w-full max-w-[390px] h-[100vh] sm:h-[844px] bg-theme sm:rounded-[40px] shadow-2xl overflow-hidden relative sm:border-[12px] border-white ring-1 ring-gray-200">
       <!-- 音乐控制 -->
       <Music ref="music" />
+      
       <!-- 页面加载中 -->
       <div v-if="loading" class="loading-wrapper">
         <div class="loading-spinner">
@@ -18,6 +19,7 @@
         </div>
         <p class="loading-text">足迹生成中...</p>
       </div>
+
       <!-- 主内容区组件 -->
       <div v-else class="content-wrapper">
         <DistrictManager
@@ -29,6 +31,32 @@
           @share="handleShare"
         />
         <MedicalRep v-else :data="detail" :getBlessing="getBlessing" @start="musicPlay" @close="closePage" @share="handleShare" />
+      </div>
+
+      <!-- 角色切换开关 (仅 Mock 模式可见) -->
+      <div v-if="$isMock" class="fixed bottom-24 right-4 z-[100] flex flex-col gap-3 animate-bounce-in">
+        <!-- 医药代表按钮 -->
+        <button
+          @click="setRole('MR')"
+          :class="[
+            'flex flex-col items-center justify-center w-16 h-16 rounded-full shadow-lg active:scale-95 transition-all border-2',
+            !isHead ? 'bg-[#FF7E5F] text-white border-[#FF7E5F]' : 'bg-white/80 text-[#FF7E5F] border-[#FF7E5F] backdrop-blur-md'
+          ]"
+        >
+          <LucideIcon name="user" :size="20" />
+          <span class="text-[10px] font-bold mt-1 text-center leading-tight">医药代表</span>
+        </button>
+        <!-- 地区经理按钮 -->
+        <button
+          @click="setRole('DM')"
+          :class="[
+            'flex flex-col items-center justify-center w-16 h-16 rounded-full shadow-lg active:scale-95 transition-all border-2',
+            isHead ? 'bg-[#FF7E5F] text-white border-[#FF7E5F]' : 'bg-white/80 text-[#FF7E5F] border-[#FF7E5F] backdrop-blur-md'
+          ]"
+        >
+          <LucideIcon name="users" :size="20" />
+          <span class="text-[10px] font-bold mt-1 text-center leading-tight">地区经理</span>
+        </button>
       </div>
     </div>
   </div>
@@ -56,6 +84,7 @@ export default {
       loading: true,
       user: null, // 用户信息
       detail: {}, // 详情
+      debugRole: 'MR', // 后台调试角色: MR (医药代表), DM (地区经理)
       yearKeyWord: [
         '有钱有闲',
         '升职加薪',
@@ -104,6 +133,9 @@ export default {
   computed: {
     // 地区经理
     isHead() {
+      if (this.$isMock) {
+        return this.debugRole === 'DM';
+      }
       if (this.user) {
         // 是否部门负责人 [ YES:是, NO:否 ] || 职位 == 地区经理
         return this.user.isHead === 'YES' || this.user.postName === '地区经理';
@@ -122,51 +154,7 @@ export default {
     });
   },
   mounted() {
-    // 测试数据
-    if (this.$isMock) {
-      this.initData({
-        openID: '57d86e4bf509e2eaf44f7b88', // 测试 医药代表
-        serialUDID: '4BA0FC536A952A6CD78806128C3C2FA2',
-        // openID: '57d86e4bf509e2eaf44f7b82', // 测试 地区经理
-        // serialUDID: '817A8B3E-E1E9-42FF-8E0A-B0BD80729F53',
-        userName: '测试'
-      });
-      return;
-    }
-    // 检查是否在药企圈中访问
-    if (!isDaChenBrowser()) {
-      Dialog.alert({
-        message: '请在药企圈中访问'
-      });
-      return false;
-    }
-    // 计算请求次数（最大次数设置）
-    let attempts = 0;
-    const maxNum = 5;
-    let timer = null;
-    const fetchUser = () => {
-      // 获取身份验证
-      DaChenBridge.getIdentity({}, ({ data }) => {
-        console.log('this.user: ', data);
-        if (data) {
-          this.initData(data);
-          timer = null;
-          clearTimeout(timer);
-        } else {
-          // 没有获取到身份的情况下，增加重试次数
-          attempts++;
-          if (timer) {
-            clearTimeout(timer);
-          }
-          if (attempts <= maxNum) {
-            timer = setTimeout(fetchUser, 1000);
-          } else {
-            console.error('User data not fetched after 10 attempts.');
-          }
-        }
-      });
-    };
-    fetchUser();
+    this.fetchData();
   },
   beforeDestroy() {
     console.log('beforeDestroy');
@@ -174,6 +162,72 @@ export default {
     this.musicPause();
   },
   methods: {
+    // 数据拉取入口
+    fetchData() {
+      this.loading = true;
+      // 测试数据
+      if (this.$isMock) {
+        const mockUser =
+          this.debugRole === 'DM'
+            ? {
+                openID: '57d86e4bf509e2eaf44f7b82', // 测试 地区经理
+                serialUDID: '817A8B3E-E1E9-42FF-8E0A-B0BD80729F53',
+                userName: '测试DM'
+              }
+            : {
+                openID: '57d86e4bf509e2eaf44f7b88', // 测试 医药代表
+                serialUDID: '4BA0FC536A952A6CD78806128C3C2FA2',
+                userName: '测试MR'
+              };
+        this.initData(mockUser);
+        return;
+      }
+      // 检查是否在药企圈中访问
+      if (!isDaChenBrowser()) {
+        Dialog.alert({ message: '请在药企圈中访问' });
+        this.loading = false;
+        return;
+      }
+      // 计算请求次数（最大次数设置）
+      let attempts = 0;
+      const maxNum = 5;
+      let timer = null;
+      const fetchUser = () => {
+        // 获取身份验证
+        DaChenBridge.getIdentity({}, ({ data }) => {
+          console.log('this.user: ', data);
+          if (data) {
+            this.initData(data);
+            timer = null;
+            clearTimeout(timer);
+          } else {
+            // 没有获取到身份的情况下，增加重试次数
+            attempts++;
+            if (timer) {
+              clearTimeout(timer);
+            }
+            if (attempts <= maxNum) {
+              timer = setTimeout(fetchUser, 1000);
+            } else {
+              console.error('User data not fetched after 10 attempts.');
+              this.loading = false;
+            }
+          }
+        });
+      };
+      fetchUser();
+    },
+    // 切换预览角色
+    toggleRole() {
+      this.setRole(this.debugRole === 'MR' ? 'DM' : 'MR');
+    },
+    // 直接设置角色
+    setRole(role) {
+      if (this.debugRole === role) return;
+      this.debugRole = role;
+      this.detail = {}; // 清空数据
+      this.fetchData();
+    },
     // 初始化数据
     async initData(data) {
       try {
@@ -251,11 +305,16 @@ export default {
         data['会议打卡城市'] = citys.replaceAll('市', '');
       }
       // 设置用户名
-      const { employeeName, departmentName } = this.user;
+      const user = this.user || {};
+      const { employeeName = '', departmentName = '' } = user;
       data['用户名'] = employeeName;
       data['所属部门名称'] = departmentName;
       // 重新计算入职天数（利用当前日期 - 入职日期）
-      data['入职天数'] = moment().diff(moment(data['入职日期'], 'YYYY-MM-DD'), 'days');
+      if (data['入职日期']) {
+        data['入职天数'] = moment().diff(moment(data['入职日期'], 'YYYY-MM-DD'), 'days');
+      } else {
+        data['入职天数'] = 0;
+      }
       return data;
     },
     // 播放音乐
